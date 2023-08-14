@@ -22,12 +22,19 @@ let fn factorial n = // functions are first-class
 println(factorial(5)) // 120
 println factorial 5 // parentheses are optional
 
-$cd /some/path // $ is used for shell commands
+$cd [/some/path] // $ is used for shell commands (the brackets make sure the path is parsed correctly)
+$cd([/some/path]) // shell commands are treated just like functions, so you can use parentheses if you want
 
 ${
   echo "this is a shell block"
   echo "you can do this: $a"
   echo "or this: ${b}"
   echo "or even this: ${factorial(5)}"
+  echo "normal slash code is not parsed in shell blocks (or validated!)"
+}
+
+$[/bin/zsh]{
+  echo "the text inside the brackets is the shell to use"
+  echo "it's piped into the shell"
 }
 ```
