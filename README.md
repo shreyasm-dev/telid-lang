@@ -41,4 +41,11 @@ $[/bin/zsh]{
   echo "the text inside the brackets is the shell to use"
   echo "it's piped into the shell"
 }
+
+let x = $[/bin/zsh]{
+  echo "you can assign the output of a shell block to a variable"
+  echo "this is the value of x"
+}
+
+println x
 ```
