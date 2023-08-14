@@ -22,12 +22,12 @@ let fn factorial n = // functions are first-class
 println(factorial(5)) // 120
 println factorial 5 // parentheses are optional
 
-println [/some/path] // [/some/path] is a path literal
-// the brackets make sure that the path is oarsed correctly
+println(|/some/path|) // |/some/path| is a path literal
+// the pipe characters make sure that the path is oarsed correctly
 // it gets converted to a string anyway, so they're optional
 
-$cd [/some/path] // $ is used for shell commands
-$cd([/some/path]) // shell commands are treated just like functions, so you can use parentheses if you want
+$cd |/some/path| // $ is used for shell commands
+$cd(|/some/path|) // shell commands are treated just like functions, so you can use parentheses if you want
 
 ${
   echo "this is a shell block"
@@ -37,15 +37,21 @@ ${
   echo "normal slash code is not parsed in shell blocks (or validated!)"
 }
 
-$[/bin/zsh]{
+$|/bin/zsh|{
   echo "the text inside the brackets is the shell to use"
   echo "it's piped into the shell"
 }
 
-let x = $[/bin/zsh]{
+let x = $|/bin/zsh|{
   echo "you can assign the output of a shell block to a variable"
   echo "this is the value of x"
 }
 
-println x
+println(x)
+
+let y = [1, 2, 3] // this is an array literal
+
+for i in y {
+  println('\(i) - \(y[i])') // use \() for string interpolation (like in swift)
+}
 ```
