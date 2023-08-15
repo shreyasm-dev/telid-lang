@@ -1,4 +1,4 @@
-use crate::tokens::{Token, TokenKind};
+use crate::{tokens::{Token, TokenKind}, error::LexError};
 use std::{iter::Peekable, str::Chars};
 
 pub struct Lexer<'a> {
@@ -106,7 +106,7 @@ impl<'a> Lexer<'a> {
         }
 
         if unterminated {
-          self.error("Unterminated string literal".to_string())
+          self.error(LexError::UnterminatedStringLiteral)
         } else {
           self.token(TokenKind::StringLiteral(literal))
         }
@@ -234,7 +234,7 @@ impl<'a> Lexer<'a> {
       ',' => self.token(TokenKind::Comma),
       '.' => self.token(TokenKind::Dot),
 
-      _ => self.error(format!("Unexpected character: {}", c)),
+      _ => self.error(LexError::UnexpectedCharacter(c)),
     }
   }
 
@@ -245,7 +245,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  pub fn error(&self, message: String) -> Token {
+  pub fn error(&self, message: LexError) -> Token {
     Token {
       kind: TokenKind::Error(message),
       span: self.start..self.current,

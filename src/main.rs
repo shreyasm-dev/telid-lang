@@ -1,8 +1,9 @@
 use crate::tokens::TokenKind;
-use ariadne::{Label, Report, ReportKind, Source};
+use ariadne::Source;
 use lexer::Lexer;
 
 mod ast;
+mod error;
 mod lexer;
 mod tokens;
 
@@ -17,10 +18,8 @@ fn main() {
   for token in tokens {
     match token.kind {
       TokenKind::Error(error) => {
-        Report::build(ReportKind::Error, path, token.span.start)
-          .with_message(error)
-          .with_label(Label::new((path, token.span)))
-          .finish()
+        error
+          .report(path, token.span)
           .print((path, Source::from(source.clone())))
           .unwrap();
       }

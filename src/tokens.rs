@@ -1,3 +1,4 @@
+use crate::error::LexError;
 use std::ops::Range;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -50,7 +51,7 @@ pub enum TokenKind {
   Comma,
   Dot,
 
-  Error(String),
+  Error(LexError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
