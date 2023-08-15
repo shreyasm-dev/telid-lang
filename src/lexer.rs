@@ -2,9 +2,9 @@ use crate::tokens::{Token, TokenKind};
 use std::{iter::Peekable, str::Chars};
 
 pub struct Lexer<'a> {
-  pub source: &'a str,
-  pub start: usize,
-  pub current: usize,
+  source: &'a str,
+  start: usize,
+  current: usize,
 }
 
 impl<'a> Lexer<'a> {
