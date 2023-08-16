@@ -70,14 +70,29 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
       .clone()
       .or(
         // If expression
+        // TODO: Is there a way to do this without using separate parsers for if and if-else?
         just(TokenKind::If)
           .then(expression.clone())
           .then(statement.clone())
-          .map(|((_, condition), consequence)| Expression::If {
-            condition: Box::new(condition),
-            consequence: Box::new(consequence),
-            alternative: Box::new(None),
-          }),
+          .then(just(TokenKind::Else))
+          .then(statement.clone())
+          .map(
+            |((((_, condition), consequence), _), alternative)| Expression::If {
+              condition: Box::new(condition),
+              consequence: Box::new(consequence),
+              alternative: Box::new(Some(alternative)),
+            },
+          )
+          .or(
+            just(TokenKind::If)
+              .then(expression.clone())
+              .then(statement.clone())
+              .map(|((_, condition), consequence)| Expression::If {
+                condition: Box::new(condition),
+                consequence: Box::new(consequence),
+                alternative: Box::new(None),
+              }),
+          ),
       )
       .map(Statement::ExpressionStatement)
       .or(
