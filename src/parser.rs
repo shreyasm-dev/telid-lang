@@ -32,10 +32,10 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
   let boolean_literal =
     select! { TokenKind::BooleanLiteral(boolean) => Expression::BooleanLiteral(boolean) };
 
-  let atom = recursive(|atom| {
+  let expression = recursive(|expression| {
     delimited_list!(
       // Array literal
-      atom,
+      expression,
       just(TokenKind::Comma),
       just(TokenKind::LeftBracket),
       just(TokenKind::RightBracket)
@@ -45,7 +45,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
       // Function call
       plain_identifier
         .then(delimited_list!(
-          plain_identifier,
+          expression,
           just(TokenKind::Comma),
           just(TokenKind::LeftParen),
           just(TokenKind::RightParen)
@@ -61,11 +61,9 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
     )))
     .or(
       // Grouping
-      atom.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
+      expression.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
     )
   });
-
-  let expression = atom;
 
   let statement = expression.map(Statement::ExpressionStatement);
 

@@ -24,7 +24,7 @@ pub enum Expression {
   ArrayLiteral(Vec<Expression>),
   FunctionCall {
     name: Identifier,
-    parameters: Vec<Identifier>,
+    parameters: Vec<Expression>,
   },
   If {
     condition: Box<Expression>,
