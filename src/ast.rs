@@ -23,8 +23,8 @@ pub enum Expression {
   BooleanLiteral(bool),
   ArrayLiteral(Vec<Expression>),
   FunctionCall {
+    name: Identifier,
     parameters: Vec<Identifier>,
-    body: Box<Statement>,
   },
   If {
     condition: Box<Expression>,
