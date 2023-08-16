@@ -4,7 +4,7 @@ use crate::{
 };
 use chumsky::{
   prelude::Simple,
-  primitive::{choice, end, just},
+  primitive::{choice, just},
   recursive::recursive,
   select, Parser,
 };
@@ -116,5 +116,8 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
     )
   });
 
-  statement.repeated().then(just(TokenKind::Eof)).map(|(output, _)| output)
+  statement
+    .repeated()
+    .then(just(TokenKind::Eof))
+    .map(|(output, _)| output)
 }
