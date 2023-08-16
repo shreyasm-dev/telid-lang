@@ -1,9 +1,7 @@
 use crate::error::LexError;
 use std::ops::Range;
-use strum_macros::AsRefStr;
 
-#[derive(Debug, Clone, PartialEq, AsRefStr)]
-// #[strum(serialize_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
   Whitespace,
   Newline,
@@ -18,7 +16,6 @@ pub enum TokenKind {
 
   Let,
   Const,
-  Fn,
   If,
   Else,
   For,
@@ -69,7 +66,6 @@ impl TokenKind {
     match identifier {
       "let" => Self::Let,
       "const" => Self::Const,
-      "fn" => Self::Fn,
       "if" => Self::If,
       "else" => Self::Else,
       "for" => Self::For,
@@ -78,18 +74,6 @@ impl TokenKind {
       "false" => Self::BooleanLiteral(false),
       "void" => Self::Void,
       _ => Self::Identifier(identifier.to_string()),
-    }
-  }
-
-  pub fn equals(self, other: TokenKind) -> bool {
-    match self {
-      Self::NumberLiteral(_) => matches!(other, Self::NumberLiteral(_)),
-      Self::BooleanLiteral(_) => matches!(other, Self::BooleanLiteral(_)),
-      Self::StringLiteral(_) => matches!(other, Self::StringLiteral(_)),
-      Self::Identifier(_) => matches!(other, Self::Identifier(_)),
-      Self::Error(_) => matches!(other, Self::Error(_)),
-
-      _ => self == other,
     }
   }
 }

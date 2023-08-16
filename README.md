@@ -22,6 +22,10 @@ let fn factorial n = // functions are first-class
 println(factorial(5)) // 120
 println factorial 5 // parentheses are optional
 
+println(|/some/path|) // |/some/path| is a path literal
+// the pipe characters make sure that the path is oarsed correctly
+// it gets converted to a string anyway, so they're optional
+
 let y = [1, 2, 3] // this is an array literal
 
 for i in y {
