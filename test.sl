@@ -1,1 +1,1 @@
-print(if x y else x
+[-1, 0, +1]

@@ -1,5 +1,5 @@
 use crate::{
-  ast::{Expression, Identifier, Statement},
+  ast::{Expression, Identifier, Statement, UnaryOperator},
   tokens::TokenKind,
 };
 use chumsky::{
@@ -38,6 +38,24 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
       expression
         .clone()
         .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen))
+        .or(
+          // Unary operator
+          choice((
+            just(TokenKind::Plus),
+            just(TokenKind::Minus),
+            just(TokenKind::Bang),
+          ))
+          .then(expression.clone())
+          .map(|(operator, operand)| Expression::Unary {
+            operator: match operator {
+              TokenKind::Plus => UnaryOperator::Identity,
+              TokenKind::Minus => UnaryOperator::Negate,
+              TokenKind::Bang => UnaryOperator::Not,
+              _ => unreachable!(),
+            },
+            operand: Box::new(operand),
+          }),
+        )
         .or(
           delimited_list!(
             // Array literal
