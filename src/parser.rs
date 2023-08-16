@@ -10,7 +10,7 @@ use chumsky::{
 };
 
 macro_rules! delimited_list {
-  ($element:ident, $separator:expr, $left:expr, $right:expr) => {
+  ($element:expr, $separator:expr, $left:expr, $right:expr) => {
     $element
       .clone()
       .separated_by($separator)
@@ -34,14 +34,23 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
 
   let statement = recursive(|statement| {
     let expression = recursive(|expression| {
-      delimited_list!(
-        // Array literal
-        expression,
-        just(TokenKind::Comma),
-        just(TokenKind::LeftBracket),
-        just(TokenKind::RightBracket)
+      choice((
+        void,
+        identifier,
+        number_literal,
+        string_literal,
+        boolean_literal,
+      ))
+      .or(
+        delimited_list!(
+          // Array literal
+          expression,
+          just(TokenKind::Comma),
+          just(TokenKind::LeftBracket),
+          just(TokenKind::RightBracket)
+        )
+        .map(Expression::ArrayLiteral),
       )
-      .map(Expression::ArrayLiteral)
       .or(
         // Function call
         plain_identifier
@@ -52,19 +61,6 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             just(TokenKind::RightParen)
           ))
           .map(|(name, parameters)| Expression::FunctionCall { name, parameters }),
-      )
-      .or(choice((
-        void,
-        identifier,
-        number_literal,
-        string_literal,
-        boolean_literal,
-      )))
-      .or(
-        // Grouping
-        expression
-          .clone()
-          .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
       )
       .or(
         // If expression
@@ -97,13 +93,19 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         just(TokenKind::For)
           .then(plain_identifier)
           .then(just(TokenKind::In))
-          .then(expression)
+          .then(expression.clone())
           .then(statement.clone())
           .map(|((((_, variable), _), iterable), body)| Expression::For {
             variable,
             iterable: Box::new(iterable),
             body: Box::new(body),
           }),
+      )
+      .or(
+        // Grouping
+        expression
+          .clone()
+          .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
       )
     });
 
