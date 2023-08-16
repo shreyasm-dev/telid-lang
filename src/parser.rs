@@ -20,17 +20,14 @@ macro_rules! delimited_list {
 
 pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKind>> {
   // For when we don't want to wrap the identifier in an expression
-  let plain_identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
-
-  let void = just(TokenKind::Void).to(Expression::Void);
-  let identifier =
-    select! { TokenKind::Identifier(identifier) => Expression::Identifier(Identifier(identifier)) };
-  let number_literal =
-    select! { TokenKind::NumberLiteral(number) => Expression::NumberLiteral(*number) };
-  let string_literal =
-    select! { TokenKind::StringLiteral(string) => Expression::StringLiteral(string) };
-  let boolean_literal =
-    select! { TokenKind::BooleanLiteral(boolean) => Expression::BooleanLiteral(boolean) };
+  let identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
+  let literal = select! {
+    TokenKind::Void => Expression::Void,
+    TokenKind::Identifier(identifier) => Expression::Identifier(Identifier(identifier)),
+    TokenKind::NumberLiteral(number) => Expression::NumberLiteral(*number),
+    TokenKind::StringLiteral(string) => Expression::StringLiteral(string),
+    TokenKind::BooleanLiteral(boolean) => Expression::BooleanLiteral(boolean),
+  };
 
   let statement = recursive(|statement| {
     let expression = recursive(|expression| {
@@ -68,7 +65,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         )
         .or(
           // Function call
-          plain_identifier
+          identifier
             .then(delimited_list!(
               expression,
               just(TokenKind::Comma),
@@ -106,7 +103,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .or(
           // For loop
           just(TokenKind::For)
-            .then(plain_identifier)
+            .then(identifier)
             .then(just(TokenKind::In))
             .then(expression)
             .then(statement.clone())
@@ -116,13 +113,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
               body: Box::new(body),
             }),
         )
-        .or(choice((
-          void,
-          identifier,
-          number_literal,
-          string_literal,
-          boolean_literal,
-        )))
+        .or(literal)
     });
 
     expression.map(Statement::ExpressionStatement).or(
