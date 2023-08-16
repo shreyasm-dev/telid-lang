@@ -31,7 +31,7 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
     .delimited_by(just(TokenKind::LeftBracket), just(TokenKind::RightBracket))
     .map(Expression::ArrayLiteral);
 
-  let expression = array.clone().or(atom);
+  let expression = array.or(atom);
 
   let statement = expression.map(Statement::ExpressionStatement);
 
