@@ -1,7 +1,7 @@
 use ariadne::{Label, Report, ReportKind};
 use std::ops::Range;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LexError {
   UnexpectedCharacter(char),
   UnterminatedStringLiteral,

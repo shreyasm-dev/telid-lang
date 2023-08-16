@@ -1,4 +1,7 @@
-use crate::{tokens::{Token, TokenKind}, error::LexError};
+use crate::{
+  error::LexError,
+  tokens::{Token, TokenKind},
+};
 use std::{iter::Peekable, str::Chars};
 
 pub struct Lexer<'a> {
@@ -113,7 +116,6 @@ impl<'a> Lexer<'a> {
       }
 
       // TODO: Implement shell literals (and shell commands)
-
       'a'..='z' | 'A'..='Z' | '_' => {
         let mut literal = c.to_string();
 
@@ -260,6 +262,7 @@ impl<'a> Lexer<'a> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use ordered_float::OrderedFloat;
 
   #[test]
   fn test_literals() {
@@ -271,7 +274,7 @@ mod tests {
       tokens,
       vec![
         Token {
-          kind: TokenKind::NumberLiteral(1.0),
+          kind: TokenKind::NumberLiteral(OrderedFloat(1.0)),
           span: 0..1
         },
         Token {
@@ -287,7 +290,7 @@ mod tests {
           span: 3..4
         },
         Token {
-          kind: TokenKind::NumberLiteral(2.25),
+          kind: TokenKind::NumberLiteral(OrderedFloat(2.25)),
           span: 4..8
         },
       ]

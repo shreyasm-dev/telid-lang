@@ -1,19 +1,12 @@
-pub struct Program {
-  pub statements: Vec<Statement>,
-}
-
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
-  Block {
-    statements: Vec<Statement>,
-  },
+  Block(Vec<Statement>),
   LetStatement {
     name: Identifier,
     value: Expression,
     constant: bool,
   },
-  ExpressionStatement {
-    expression: Expression,
-  },
+  ExpressionStatement(Expression),
   FunctionDeclaration {
     name: Identifier,
     parameters: Vec<Identifier>,
@@ -21,11 +14,12 @@ pub enum Statement {
   },
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
   Void,
   Identifier(Identifier),
   NumberLiteral(f64),
-  StringLiteral(&'static str),
+  StringLiteral(String),
   BooleanLiteral(bool),
   ArrayLiteral(Vec<Expression>),
   FunctionCall {
@@ -53,10 +47,10 @@ pub enum Expression {
   },
 }
 
-pub struct Identifier {
-  pub value: &'static str,
-}
+#[derive(Debug, Clone, PartialEq)]
+pub struct Identifier(pub String);
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum BinaryOperator {
   Add,
   Subtract,
@@ -73,6 +67,7 @@ pub enum BinaryOperator {
   Or,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum UnaryOperator {
   Negate,
   Not,

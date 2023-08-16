@@ -1,13 +1,15 @@
 use crate::error::LexError;
+use ordered_float::OrderedFloat;
 use std::ops::Range;
+use strum_macros::AsRefStr;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, AsRefStr)]
 pub enum TokenKind {
   Whitespace,
   Newline,
   Comment,
 
-  NumberLiteral(f64),
+  NumberLiteral(OrderedFloat<f64>),
   BooleanLiteral(bool),
   StringLiteral(String),
   Void,
@@ -74,6 +76,30 @@ impl TokenKind {
       "false" => Self::BooleanLiteral(false),
       "void" => Self::Void,
       _ => Self::Identifier(identifier.to_string()),
+    }
+  }
+
+  pub fn from_op(op: &str) -> Self {
+    match op {
+      "+" => Self::Plus,
+      "-" => Self::Minus,
+      "*" => Self::Asterisk,
+      "/" => Self::Slash,
+      "%" => Self::Percent,
+      "^" => Self::Caret,
+      "&" => Self::Ampersand,
+      "&&" => Self::AmpersandAmpersand,
+      "|" => Self::Pipe,
+      "||" => Self::PipePipe,
+      "==" => Self::EqualsEquals,
+      "!" => Self::Bang,
+      "!=" => Self::BangEquals,
+      "<" => Self::LessThan,
+      "<=" => Self::LessThanEquals,
+      ">" => Self::GreaterThan,
+      ">=" => Self::GreaterThanEquals,
+      "=" => Self::Equals,
+      _ => panic!("Invalid operator: {}", op), // TODO: Handle this better
     }
   }
 }
