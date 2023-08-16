@@ -4,7 +4,7 @@ use crate::{
 };
 use chumsky::{
   prelude::Simple,
-  primitive::{choice, just, end},
+  primitive::{choice, end, just},
   recursive::recursive,
   select, Parser,
 };
@@ -18,7 +18,7 @@ macro_rules! delimited_list {
   };
 }
 
-pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> {
+pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKind>> {
   // For when we don't want to wrap the identifier in an expression
   let plain_identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
 
@@ -67,7 +67,7 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
 
   let expression = atom;
 
-  let statement = expression;
+  let statement = expression.map(Statement::ExpressionStatement);
 
-  statement.then(end()).map(|(expression, _)| Statement::ExpressionStatement(expression))
+  statement.repeated().then(end()).map(|(output, _)| output)
 }
