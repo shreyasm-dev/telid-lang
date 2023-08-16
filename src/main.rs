@@ -16,7 +16,7 @@ fn main() {
   let source = std::fs::read_to_string(path).expect("Failed to read source file");
 
   let mut lexer = Lexer::new(source.as_str().clone());
-  let tokens = lexer.lex();
+  let tokens = lexer.lex(false);
 
   for token in tokens.clone() {
     match token.kind {
@@ -31,15 +31,6 @@ fn main() {
       _ => {}
     }
   }
-
-  // remove newlines, whitespace, and comments
-  let tokens = tokens
-    .into_iter()
-    .filter(|token| match token.kind {
-      TokenKind::Whitespace | TokenKind::Newline | TokenKind::Comment => false,
-      _ => true,
-    })
-    .collect::<Vec<_>>();
 
   let parser = parser();
   let ast = parser.parse(

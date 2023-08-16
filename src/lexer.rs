@@ -19,13 +19,21 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  pub fn lex(&mut self) -> Vec<Token> {
+  pub fn lex(&mut self, emit_ignored: bool) -> Vec<Token> {
     let mut tokens = Vec::new();
     let chars = self.source.clone();
     let mut chars = chars.chars().peekable();
 
     while let Some(c) = chars.next() {
-      tokens.push(self.lex_token(&mut chars, c));
+      let token = self.lex_token(&mut chars, c);
+      match token.kind {
+        TokenKind::Whitespace | TokenKind::Newline | TokenKind::Comment => {
+          if emit_ignored {
+            tokens.push(token);
+          }
+        }
+        _ => tokens.push(token),
+      }
     }
 
     tokens
@@ -268,7 +276,7 @@ mod tests {
   fn test_literals() {
     let source = "1 + 2.25";
     let mut lexer = Lexer::new(source);
-    let tokens = lexer.lex();
+    let tokens = lexer.lex(true);
 
     assert_eq!(
       tokens,
@@ -298,7 +306,7 @@ mod tests {
 
     let source = "'This is a string\\nIt can handle newlines (without \\\\n)\nSlash\\'s string literals are cool'";
     let mut lexer = Lexer::new(source);
-    let tokens = lexer.lex();
+    let tokens = lexer.lex(true);
 
     assert_eq!(
       tokens,
@@ -313,7 +321,7 @@ mod tests {
 
     let source = "true false void";
     let mut lexer = Lexer::new(source);
-    let tokens = lexer.lex();
+    let tokens = lexer.lex(true);
 
     assert_eq!(
       tokens,
@@ -346,7 +354,7 @@ mod tests {
   fn test_identifiers_keywords() {
     let source = "let x letx xletx xlet";
     let mut lexer = Lexer::new(source);
-    let tokens = lexer.lex();
+    let tokens = lexer.lex(true);
 
     assert_eq!(
       tokens,
