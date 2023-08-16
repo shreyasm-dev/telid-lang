@@ -1,21 +1,15 @@
-use std::path::Path;
+#[derive(Debug, Clone, PartialEq)]
+pub struct Program(pub Vec<Statement>);
 
-pub struct Program {
-  pub statements: Vec<Statement>,
-}
-
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
-  Block {
-    statements: Vec<Statement>,
-  },
+  Block(Vec<Statement>),
   LetStatement {
     name: Identifier,
-    value: Expression,
+    value: Box<Statement>,
     constant: bool,
   },
-  ExpressionStatement {
-    expression: Expression,
-  },
+  ExpressionStatement(Expression),
   FunctionDeclaration {
     name: Identifier,
     parameters: Vec<Identifier>,
@@ -23,47 +17,43 @@ pub enum Statement {
   },
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
   Void,
   Identifier(Identifier),
   NumberLiteral(f64),
-  StringLiteral(&'static str),
+  StringLiteral(String),
   BooleanLiteral(bool),
-  PathLiteral(&'static Path),
-  ArrayLiteral(Vec<Expression>),
-  ShellBlock {
-    shell: Option<&'static Path>,
-    content: &'static str,
-  },
+  ArrayLiteral(Vec<Statement>),
   FunctionCall {
     parameters: Vec<Identifier>,
     body: Box<Statement>,
   },
   If {
-    condition: Box<Expression>,
+    condition: Box<Statement>,
     consequence: Box<Statement>,
     alternative: Option<Box<Statement>>,
   },
   For {
     variable: Identifier,
-    iterable: Box<Expression>,
+    iterable: Box<Statement>,
     body: Box<Statement>,
   },
   Binary {
     operator: BinaryOperator,
-    left: Box<Expression>,
-    right: Box<Expression>,
+    left: Box<Statement>,
+    right: Box<Statement>,
   },
   Unary {
     operator: UnaryOperator,
-    operand: Box<Expression>,
+    operand: Box<Statement>,
   },
 }
 
-pub struct Identifier {
-  pub value: &'static str,
-}
+#[derive(Debug, Clone, PartialEq)]
+pub struct Identifier(pub String);
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum BinaryOperator {
   Add,
   Subtract,
@@ -80,6 +70,7 @@ pub enum BinaryOperator {
   Or,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum UnaryOperator {
   Negate,
   Not,
