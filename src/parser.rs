@@ -94,6 +94,19 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
               }),
           ),
       )
+      .or(
+        // For loop
+        just(TokenKind::For)
+          .then(plain_identifier)
+          .then(just(TokenKind::In))
+          .then(expression)
+          .then(statement.clone())
+          .map(|((((_, variable), _), iterable), body)| Expression::For {
+            variable,
+            iterable: Box::new(iterable),
+            body: Box::new(body),
+          }),
+      )
       .map(Statement::ExpressionStatement)
       .or(
         // Block

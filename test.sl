@@ -1,6 +1,1 @@
-if x
-  print("1")
-else if y
-  print("2")
-else
-  print("3")
+for x in y print(x)
