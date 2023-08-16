@@ -36,6 +36,8 @@ impl<'a> Lexer<'a> {
       }
     }
 
+    tokens.push(self.token(TokenKind::Eof));
+
     tokens
   }
 

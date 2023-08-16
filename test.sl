@@ -1,1 +1,1 @@
-print(if x y else x)
+print(if x y else x

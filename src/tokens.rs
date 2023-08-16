@@ -55,6 +55,7 @@ pub enum TokenKind {
   Dot,
 
   Error(LexError),
+  Eof,
 }
 
 #[derive(Debug, Clone, PartialEq)]
