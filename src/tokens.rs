@@ -18,6 +18,7 @@ pub enum TokenKind {
 
   Let,
   Const,
+  Fn,
   If,
   Else,
   For,
@@ -68,6 +69,7 @@ impl TokenKind {
     match identifier {
       "let" => Self::Let,
       "const" => Self::Const,
+      "fn" => Self::Fn,
       "if" => Self::If,
       "else" => Self::Else,
       "for" => Self::For,
