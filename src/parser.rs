@@ -22,7 +22,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
   // For when we don't want to wrap the identifier in an expression
   let plain_identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
 
-  let void = just(TokenKind::Void).map(|_| Expression::Void);
+  let void = just(TokenKind::Void).to(Expression::Void);
   let identifier =
     select! { TokenKind::Identifier(identifier) => Expression::Identifier(Identifier(identifier)) };
   let number_literal =
