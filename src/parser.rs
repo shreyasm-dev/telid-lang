@@ -34,79 +34,77 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
 
   let statement = recursive(|statement| {
     let expression = recursive(|expression| {
-      choice((
-        void,
-        identifier,
-        number_literal,
-        string_literal,
-        boolean_literal,
-      ))
-      .or(
-        delimited_list!(
-          // Array literal
-          expression,
-          just(TokenKind::Comma),
-          just(TokenKind::LeftBracket),
-          just(TokenKind::RightBracket)
-        )
-        .map(Expression::ArrayLiteral),
-      )
-      .or(
-        // Function call
-        plain_identifier
-          .then(delimited_list!(
+      // Grouping
+      expression
+        .clone()
+        .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen))
+        .or(
+          delimited_list!(
+            // Array literal
             expression,
             just(TokenKind::Comma),
-            just(TokenKind::LeftParen),
-            just(TokenKind::RightParen)
-          ))
-          .map(|(name, parameters)| Expression::FunctionCall { name, parameters }),
-      )
-      .or(
-        // If expression
-        // TODO: Is there a way to do this without using separate parsers for if and if-else?
-        just(TokenKind::If)
-          .then(expression.clone())
-          .then(statement.clone())
-          .then(just(TokenKind::Else))
-          .then(statement.clone())
-          .map(
-            |((((_, condition), consequence), _), alternative)| Expression::If {
-              condition: Box::new(condition),
-              consequence: Box::new(consequence),
-              alternative: Box::new(Some(alternative)),
-            },
+            just(TokenKind::LeftBracket),
+            just(TokenKind::RightBracket)
           )
-          .or(
-            just(TokenKind::If)
-              .then(expression.clone())
-              .then(statement.clone())
-              .map(|((_, condition), consequence)| Expression::If {
+          .map(Expression::ArrayLiteral),
+        )
+        .or(
+          // Function call
+          plain_identifier
+            .then(delimited_list!(
+              expression,
+              just(TokenKind::Comma),
+              just(TokenKind::LeftParen),
+              just(TokenKind::RightParen)
+            ))
+            .map(|(name, parameters)| Expression::FunctionCall { name, parameters }),
+        )
+        .or(
+          // If expression
+          // TODO: Is there a way to do this without using separate parsers for if and if-else?
+          just(TokenKind::If)
+            .then(expression.clone())
+            .then(statement.clone())
+            .then(just(TokenKind::Else))
+            .then(statement.clone())
+            .map(
+              |((((_, condition), consequence), _), alternative)| Expression::If {
                 condition: Box::new(condition),
                 consequence: Box::new(consequence),
-                alternative: Box::new(None),
-              }),
-          ),
-      )
-      .or(
-        // For loop
-        just(TokenKind::For)
-          .then(plain_identifier)
-          .then(just(TokenKind::In))
-          .then(expression.clone())
-          .then(statement.clone())
-          .map(|((((_, variable), _), iterable), body)| Expression::For {
-            variable,
-            iterable: Box::new(iterable),
-            body: Box::new(body),
-          }),
-      )
-      .or(
-        // Grouping
-        expression
-          .clone()
-          .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
-      )
+                alternative: Box::new(Some(alternative)),
+              },
+            )
+            .or(
+              just(TokenKind::If)
+                .then(expression.clone())
+                .then(statement.clone())
+                .map(|((_, condition), consequence)| Expression::If {
+                  condition: Box::new(condition),
+                  consequence: Box::new(consequence),
+                  alternative: Box::new(None),
+                }),
+            ),
+        )
+        .or(
+          // For loop
+          just(TokenKind::For)
+            .then(plain_identifier)
+            .then(just(TokenKind::In))
+            .then(expression)
+            .then(statement.clone())
+            .map(|((((_, variable), _), iterable), body)| Expression::For {
+              variable,
+              iterable: Box::new(iterable),
+              body: Box::new(body),
+            }),
+        )
+        .or(choice((
+          void,
+          identifier,
+          number_literal,
+          string_literal,
+          boolean_literal,
+        )))
     });
 
     expression.map(Statement::ExpressionStatement).or(
