@@ -29,12 +29,7 @@ pub enum Expression {
   NumberLiteral(f64),
   StringLiteral(&'static str),
   BooleanLiteral(bool),
-  PathLiteral(&'static Path),
   ArrayLiteral(Vec<Expression>),
-  ShellBlock {
-    shell: Option<&'static Path>,
-    content: &'static str,
-  },
   FunctionCall {
     parameters: Vec<Identifier>,
     body: Box<Statement>,
