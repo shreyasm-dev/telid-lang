@@ -19,6 +19,7 @@ macro_rules! delimited_list {
 }
 
 pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> {
+  // For when we don't want to wrap the identifier in an expression
   let plain_identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
 
   let void = just(TokenKind::Void).map(|_| Expression::Void);
@@ -33,6 +34,7 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
 
   let atom = recursive(|atom| {
     delimited_list!(
+      // Array literal
       atom,
       just(TokenKind::Comma),
       just(TokenKind::LeftBracket),
@@ -40,6 +42,7 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
     )
     .map(Expression::ArrayLiteral)
     .or(
+      // Function call
       plain_identifier
         .then(delimited_list!(
           plain_identifier,
@@ -56,7 +59,10 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
       string_literal,
       boolean_literal,
     )))
-    .or(atom.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)))
+    .or(
+      // Grouping
+      atom.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
+    )
   });
 
   let expression = atom;
