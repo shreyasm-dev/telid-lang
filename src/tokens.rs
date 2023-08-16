@@ -81,28 +81,4 @@ impl TokenKind {
       _ => Self::Identifier(identifier.to_string()),
     }
   }
-
-  pub fn from_op(op: &str) -> Self {
-    match op {
-      "+" => Self::Plus,
-      "-" => Self::Minus,
-      "*" => Self::Asterisk,
-      "/" => Self::Slash,
-      "%" => Self::Percent,
-      "^" => Self::Caret,
-      "&" => Self::Ampersand,
-      "&&" => Self::AmpersandAmpersand,
-      "|" => Self::Pipe,
-      "||" => Self::PipePipe,
-      "==" => Self::EqualsEquals,
-      "!" => Self::Bang,
-      "!=" => Self::BangEquals,
-      "<" => Self::LessThan,
-      "<=" => Self::LessThanEquals,
-      ">" => Self::GreaterThan,
-      ">=" => Self::GreaterThanEquals,
-      "=" => Self::Equals,
-      _ => panic!("Invalid operator: {}", op), // TODO: Handle this better
-    }
-  }
 }
