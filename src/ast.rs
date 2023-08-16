@@ -29,7 +29,7 @@ pub enum Expression {
   If {
     condition: Box<Expression>,
     consequence: Box<Statement>,
-    alternative: Option<Box<Statement>>,
+    alternative: Box<Option<Statement>>,
   },
   For {
     variable: Identifier,

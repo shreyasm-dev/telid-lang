@@ -66,13 +66,27 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
   });
 
   let statement = recursive(|statement| {
-    expression.map(Statement::ExpressionStatement).or(
-      // Block
-      statement
-        .repeated()
-        .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
-        .map(Statement::Block),
-    )
+    expression
+      .clone()
+      .or(
+        // If expression
+        just(TokenKind::If)
+          .then(expression.clone())
+          .then(statement.clone())
+          .map(|((_, condition), consequence)| Expression::If {
+            condition: Box::new(condition),
+            consequence: Box::new(consequence),
+            alternative: Box::new(None),
+          }),
+      )
+      .map(Statement::ExpressionStatement)
+      .or(
+        // Block
+        statement
+          .repeated()
+          .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
+          .map(Statement::Block),
+      )
   });
 
   statement.repeated().then(end()).map(|(output, _)| output)
