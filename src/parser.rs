@@ -32,42 +32,40 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
   let boolean_literal =
     select! { TokenKind::BooleanLiteral(boolean) => Expression::BooleanLiteral(boolean) };
 
-  let expression = recursive(|expression| {
-    delimited_list!(
-      // Array literal
-      expression,
-      just(TokenKind::Comma),
-      just(TokenKind::LeftBracket),
-      just(TokenKind::RightBracket)
-    )
-    .map(Expression::ArrayLiteral)
-    .or(
-      // Function call
-      plain_identifier
-        .then(delimited_list!(
-          expression,
-          just(TokenKind::Comma),
-          just(TokenKind::LeftParen),
-          just(TokenKind::RightParen)
-        ))
-        .map(|(name, parameters)| Expression::FunctionCall { name, parameters }),
-    )
-    .or(choice((
-      void,
-      identifier,
-      number_literal,
-      string_literal,
-      boolean_literal,
-    )))
-    .or(
-      // Grouping
-      expression.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
-    )
-  });
-
   let statement = recursive(|statement| {
-    expression
-      .clone()
+    let expression = recursive(|expression| {
+      delimited_list!(
+        // Array literal
+        expression,
+        just(TokenKind::Comma),
+        just(TokenKind::LeftBracket),
+        just(TokenKind::RightBracket)
+      )
+      .map(Expression::ArrayLiteral)
+      .or(
+        // Function call
+        plain_identifier
+          .then(delimited_list!(
+            expression,
+            just(TokenKind::Comma),
+            just(TokenKind::LeftParen),
+            just(TokenKind::RightParen)
+          ))
+          .map(|(name, parameters)| Expression::FunctionCall { name, parameters }),
+      )
+      .or(choice((
+        void,
+        identifier,
+        number_literal,
+        string_literal,
+        boolean_literal,
+      )))
+      .or(
+        // Grouping
+        expression
+          .clone()
+          .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)),
+      )
       .or(
         // If expression
         // TODO: Is there a way to do this without using separate parsers for if and if-else?
@@ -107,14 +105,15 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             body: Box::new(body),
           }),
       )
-      .map(Statement::ExpressionStatement)
-      .or(
-        // Block
-        statement
-          .repeated()
-          .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
-          .map(Statement::Block),
-      )
+    });
+
+    expression.map(Statement::ExpressionStatement).or(
+      // Block
+      statement
+        .repeated()
+        .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
+        .map(Statement::Block),
+    )
   });
 
   statement.repeated().then(end()).map(|(output, _)| output)

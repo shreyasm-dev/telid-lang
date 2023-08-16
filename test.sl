@@ -1,1 +1,1 @@
-for x in y print(x)
+print(if x y else x)
