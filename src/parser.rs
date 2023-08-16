@@ -2,7 +2,12 @@ use crate::{
   ast::{Expression, Identifier, Statement},
   tokens::TokenKind,
 };
-use chumsky::{prelude::Simple, primitive::just, recursive::recursive, select, Parser};
+use chumsky::{
+  prelude::Simple,
+  primitive::{choice, just},
+  recursive::recursive,
+  select, Parser,
+};
 
 pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> {
   let void = just(TokenKind::Void).map(|_| Expression::Void);
@@ -15,23 +20,23 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
   let boolean_literal =
     select! { TokenKind::BooleanLiteral(boolean) => Expression::BooleanLiteral(boolean) };
 
-  let atom = void
-    .or(identifier)
-    .or(number_literal)
-    .or(string_literal)
-    .or(boolean_literal)
-    .or(recursive(|atom| {
-      atom.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen))
-    }));
+  let atom = recursive(|atom| {
+    atom
+      .clone()
+      .separated_by(just(TokenKind::Comma))
+      .delimited_by(just(TokenKind::LeftBracket), just(TokenKind::RightBracket))
+      .map(Expression::ArrayLiteral)
+      .or(choice((
+        void,
+        identifier,
+        number_literal,
+        string_literal,
+        boolean_literal,
+      )))
+      .or(atom.delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen)))
+  });
 
-  // TODO: Arrays cannot be nested
-  let array = atom
-    .clone()
-    .separated_by(just(TokenKind::Comma))
-    .delimited_by(just(TokenKind::LeftBracket), just(TokenKind::RightBracket))
-    .map(Expression::ArrayLiteral);
-
-  let expression = array.or(atom);
+  let expression = atom;
 
   let statement = expression.map(Statement::ExpressionStatement);
 
