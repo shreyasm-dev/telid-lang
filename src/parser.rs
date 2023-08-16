@@ -4,7 +4,7 @@ use crate::{
 };
 use chumsky::{
   prelude::Simple,
-  primitive::{choice, just},
+  primitive::{choice, just, end},
   recursive::recursive,
   select, Parser,
 };
@@ -67,7 +67,7 @@ pub fn parser() -> impl Parser<TokenKind, Statement, Error = Simple<TokenKind>> 
 
   let expression = atom;
 
-  let statement = expression.map(Statement::ExpressionStatement);
+  let statement = expression;
 
-  statement
+  statement.then(end()).map(|(expression, _)| Statement::ExpressionStatement(expression))
 }
