@@ -57,3 +57,5 @@ Adding a semicolon would fix this
 
 */
 ```
+
+Look at `examples/` for more examples
