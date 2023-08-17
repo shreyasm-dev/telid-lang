@@ -35,6 +35,14 @@ for i in y {
   println(+ + i ' - ' [i]y); // Index access is a prefix operator
 }
 
+let counter = 0;
+
+while <= counter 10 {
+  counter = + counter 1;
+}
+
+println(counter); // 11
+
 println(* 2 3); // telid uses prefix notation
 
 println(.. 1 10); // .. is the range operator (inclusive, inclusive)

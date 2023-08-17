@@ -44,6 +44,10 @@ pub enum Expression {
     iterable: Box<Expression>,
     body: Box<Statement>,
   },
+  While {
+    condition: Box<Expression>,
+    body: Box<Statement>,
+  },
   Binary {
     operator: BinaryOperator,
     left: Box<Expression>,

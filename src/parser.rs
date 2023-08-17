@@ -140,11 +140,21 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
           just(TokenKind::For)
             .ignore_then(identifier)
             .then_ignore(just(TokenKind::In))
-            .then(expression)
+            .then(expression.clone())
             .then(statement.clone())
             .map(|((variable, iterable), body)| Expression::For {
               variable,
               iterable: Box::new(iterable),
+              body: Box::new(body),
+            }),
+        )
+        .or(
+          // While loop
+          just(TokenKind::While)
+            .ignore_then(expression)
+            .then(statement.clone())
+            .map(|(condition, body)| Expression::While {
+              condition: Box::new(condition),
               body: Box::new(body),
             }),
         )

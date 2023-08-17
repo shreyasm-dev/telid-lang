@@ -22,6 +22,7 @@ pub enum TokenKind {
   If,
   Else,
   For,
+  While,
   In,
 
   Plus,
@@ -76,6 +77,7 @@ impl TokenKind {
       "if" => Self::If,
       "else" => Self::Else,
       "for" => Self::For,
+      "while" => Self::While,
       "in" => Self::In,
       "true" => Self::BooleanLiteral(true),
       "false" => Self::BooleanLiteral(false),

@@ -8,4 +8,10 @@ let fn fizzbuzz n =
   else
     n;
 
-for i in .. 1 100 println(fizzbuzz(i));
+for i in .. 1 15 println(fizzbuzz(i));
+
+let count = 15;
+while < count 30 {
+  count = + count 1;
+  println(fizzbuzz(count));
+}

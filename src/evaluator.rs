@@ -71,7 +71,7 @@ fn evaluate_statement(
           if variable.constant {
             Err(EvaluationError::ConstantReassignment(name.0))
           } else {
-            scope.insert(
+            scope.insert_scope(
               name.0,
               Variable {
                 value: value.clone(),
@@ -330,6 +330,32 @@ fn evaluate_expression(
           vec!["Array".to_string()],
         )),
       }
+    }
+    Expression::While { condition, body } => {
+      let mut value = Vec::new();
+
+      loop {
+        let condition = evaluate_expression(*condition.clone(), &mut scope)?;
+        match condition {
+          Value::Boolean(boolean) => {
+            if boolean {
+              scope.push_scope();
+              value.push(evaluate_statement(*body.clone(), &mut scope)?);
+              scope.pop_scope();
+            } else {
+              break;
+            }
+          }
+          _ => {
+            return Err(EvaluationError::InvalidType(
+              condition.as_ref().to_string(),
+              vec!["Boolean".to_string()],
+            ))
+          }
+        }
+      }
+
+      Ok(Value::Array(value))
     }
   }
 }
