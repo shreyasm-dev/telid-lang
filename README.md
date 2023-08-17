@@ -1,6 +1,6 @@
-# slash
+# telid
 
-slash is a dynamically-typed, interpreted language
+telid is a dynamically-typed, interpreted language
 
 This is a learning project. It's not good. At all.
 
@@ -35,7 +35,7 @@ for i in y {
   println(+ + i ' - ' [i]y); // Index access is a prefix operator
 }
 
-println(* 2 3); // slash uses prefix notation
+println(* 2 3); // telid uses prefix notation
 
 /*
 
