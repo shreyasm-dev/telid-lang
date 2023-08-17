@@ -1,4 +1,4 @@
-use crate::error::LexError;
+use crate::{error::LexError, ast::BinaryOperator};
 use ordered_float::OrderedFloat;
 use std::ops::Range;
 use strum_macros::AsRefStr;
@@ -79,6 +79,25 @@ impl TokenKind {
       "false" => Self::BooleanLiteral(false),
       "void" => Self::Void,
       _ => Self::Identifier(identifier.to_string()),
+    }
+  }
+
+  pub fn to_binary_operator(&self) -> BinaryOperator {
+    match self {
+      Self::Plus => BinaryOperator::Add,
+      Self::Minus => BinaryOperator::Subtract,
+      Self::Asterisk => BinaryOperator::Multiply,
+      Self::Slash => BinaryOperator::Divide,
+      Self::Percent => BinaryOperator::Modulo,
+      Self::EqualsEquals => BinaryOperator::Equal,
+      Self::BangEquals => BinaryOperator::NotEqual,
+      Self::LessThan => BinaryOperator::LessThan,
+      Self::LessThanEquals => BinaryOperator::LessThanOrEqual,
+      Self::GreaterThan => BinaryOperator::GreaterThan,
+      Self::GreaterThanEquals => BinaryOperator::GreaterThanOrEqual,
+      Self::AmpersandAmpersand => BinaryOperator::And,
+      Self::PipePipe => BinaryOperator::Or,
+      _ => unreachable!(),
     }
   }
 }

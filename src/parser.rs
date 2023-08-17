@@ -36,6 +36,32 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .clone()
         .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen))
         .or(
+          // Binary operator
+          // Use prefix notation
+          choice((
+            just(TokenKind::Plus),
+            just(TokenKind::Minus),
+            just(TokenKind::Asterisk),
+            just(TokenKind::Slash),
+            just(TokenKind::Percent),
+            just(TokenKind::EqualsEquals),
+            just(TokenKind::BangEquals),
+            just(TokenKind::LessThan),
+            just(TokenKind::LessThanEquals),
+            just(TokenKind::GreaterThan),
+            just(TokenKind::GreaterThanEquals),
+            just(TokenKind::AmpersandAmpersand),
+            just(TokenKind::PipePipe),
+          ))
+          .then(expression.clone())
+          .then(expression.clone())
+          .map(|((operator, left), right)| Expression::Binary {
+            operator: operator.to_binary_operator(),
+            left: Box::new(left),
+            right: Box::new(right),
+          })
+        )
+        .or(
           // Unary operator
           choice((
             just(TokenKind::Plus),

@@ -27,4 +27,6 @@ let y = [1, 2, 3] // this is an array literal
 for i in y {
   println('\(i) - \(y[i])') // use \() for string interpolation (like in swift)
 }
+
+println(* 2 3) // slash uses prefix notation
 ```
