@@ -56,7 +56,10 @@ fn run_repl() {
     match input {
       Ok(input) => {
         if let Ok((output, scope_)) = run(&input, "repl", scope.clone()) {
-          println!("{}", output.to_string());
+          if output != Value::Void {
+            println!("{}", output.to_string());
+          }
+
           scope = scope_;
         }
       }
