@@ -38,6 +38,7 @@ pub enum EvaluationError {
   IncorrectParameterCount(usize, usize),
   ConstantReassignment(String),
   InvalidRange(f64, f64),
+  AssertionFailed,
 }
 
 impl ToString for EvaluationError {
@@ -70,6 +71,7 @@ impl ToString for EvaluationError {
       EvaluationError::InvalidRange(start, end) => {
         format!("Invalid range: {}..{}", start, end)
       }
+      EvaluationError::AssertionFailed => "Assertion failed".to_string(),
     }
   }
 }
