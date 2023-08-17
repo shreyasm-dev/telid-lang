@@ -39,14 +39,12 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| {
-          match parameters[0] {
-            Value::Number(code) => std::process::exit(code as i32),
-            _ => Err(crate::error::EvaluationError::InvalidType(
-              parameters[0].as_ref().to_string(),
-              vec![String::from("Number")],
-            )),
-          }
+        function: |parameters| match parameters[0] {
+          Value::Number(code) => std::process::exit(code as i32),
+          _ => Err(crate::error::EvaluationError::InvalidType(
+            parameters[0].as_ref().to_string(),
+            vec![String::from("Number")],
+          )),
         },
       },
       constant: true,

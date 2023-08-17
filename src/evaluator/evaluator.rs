@@ -7,10 +7,7 @@ use crate::{
   parser::ast::{BinaryOperator, Expression, Statement, UnaryOperator},
 };
 
-pub fn evaluate(
-  program: Vec<Statement>,
-  mut scope: Scope,
-) -> Result<Scope, EvaluationError> {
+pub fn evaluate(program: Vec<Statement>, mut scope: Scope) -> Result<Scope, EvaluationError> {
   for statement in program {
     evaluate_statement(statement, &mut scope)?;
   }
