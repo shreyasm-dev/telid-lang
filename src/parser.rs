@@ -82,13 +82,11 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             .then(statement.clone())
             .then_ignore(just(TokenKind::Else))
             .then(statement.clone())
-            .map(
-              |((condition, consequence), alternative)| Expression::If {
-                condition: Box::new(condition),
-                consequence: Box::new(consequence),
-                alternative: Box::new(Some(alternative)),
-              },
-            )
+            .map(|((condition, consequence), alternative)| Expression::If {
+              condition: Box::new(condition),
+              consequence: Box::new(consequence),
+              alternative: Box::new(Some(alternative)),
+            })
             .or(
               just(TokenKind::If)
                 .ignore_then(expression.clone())
@@ -167,7 +165,5 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
     )
   });
 
-  statement
-    .repeated()
-    .then_ignore(just(TokenKind::Eof))
+  statement.repeated().then_ignore(just(TokenKind::Eof))
 }
