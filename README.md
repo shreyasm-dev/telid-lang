@@ -1,6 +1,6 @@
-# telid
+# Telid
 
-telid is a dynamically-typed, interpreted language
+Telid is a dynamically-typed, interpreted language
 
 This is a learning project. It's not good. At all.
 
