@@ -1,6 +1,9 @@
 use crate::{
-  evaluator::{Scope, Value, Variable},
-  tokens::TokenKind,
+  evaluator::{
+    value::{Value, Variable},
+    Scope,
+  },
+  lexer::tokens::TokenKind,
 };
 use ariadne::{Label, Report, ReportKind, Source};
 use chumsky::{error::SimpleReason, Parser};
@@ -8,12 +11,10 @@ use evaluator::evaluate;
 use lexer::Lexer;
 use parser::parser;
 
-mod ast;
 mod error;
 mod evaluator;
 mod lexer;
 mod parser;
-mod tokens;
 
 fn main() {
   let args = std::env::args().collect::<Vec<_>>();

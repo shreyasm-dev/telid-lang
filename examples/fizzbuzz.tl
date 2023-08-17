@@ -15,5 +15,3 @@ while < count 30 {
   count = + count 1;
   println(fizzbuzz(count));
 }
-
-[1][]

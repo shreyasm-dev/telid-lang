@@ -1,4 +1,4 @@
-use crate::{ast::BinaryOperator, error::LexError};
+use crate::{error::LexError, parser::ast::BinaryOperator};
 use ordered_float::OrderedFloat;
 use std::ops::Range;
 use strum_macros::AsRefStr;

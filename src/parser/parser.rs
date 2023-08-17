@@ -1,7 +1,5 @@
-use crate::{
-  ast::{Expression, Identifier, Statement, UnaryOperator},
-  tokens::TokenKind,
-};
+use super::ast::{Expression, Identifier, Statement, UnaryOperator};
+use crate::lexer::tokens::TokenKind;
 use chumsky::{
   prelude::Simple,
   primitive::{choice, just},
