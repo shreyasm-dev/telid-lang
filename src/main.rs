@@ -5,7 +5,7 @@ use evaluator::{evaluate, scope, value::Value};
 use inquire::{
   set_global_render_config,
   ui::{RenderConfig, StyleSheet, Styled},
-  Text,
+  Text, InquireError,
 };
 use lexer::Lexer;
 use parser::parser;
@@ -51,11 +51,19 @@ fn run_repl() {
   let mut scope = scope::default();
 
   loop {
-    let input = Text::new("").prompt().unwrap();
+    let input = Text::new("").prompt();
 
-    if let Ok((output, scope_)) = run(&input, "repl", scope.clone()) {
-      println!("{}", output.to_string());
-      scope = scope_;
+    match input {
+      Ok(input) => {
+        if let Ok((output, scope_)) = run(&input, "repl", scope.clone()) {
+          println!("{}", output.to_string());
+          scope = scope_;
+        }
+      }
+      Err(error) => match error {
+        InquireError::OperationCanceled | InquireError::OperationInterrupted => println!("Type exit(0) to exit"),
+        _ => panic!("Unexpected error: {:?}", error),
+      },
     }
   }
 }
