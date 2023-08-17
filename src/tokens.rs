@@ -53,6 +53,7 @@ pub enum TokenKind {
 
   Comma,
   Dot,
+  DotDot,
   Semicolon,
 
   Error(LexError),
@@ -96,8 +97,10 @@ impl TokenKind {
       Self::LessThanEquals => BinaryOperator::LessThanOrEqual,
       Self::GreaterThan => BinaryOperator::GreaterThan,
       Self::GreaterThanEquals => BinaryOperator::GreaterThanOrEqual,
+      Self::Ampersand => BinaryOperator::And,
       Self::AmpersandAmpersand => BinaryOperator::And,
       Self::PipePipe => BinaryOperator::Or,
+      Self::DotDot => BinaryOperator::Range,
       _ => unreachable!(),
     }
   }

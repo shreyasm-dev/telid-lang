@@ -40,4 +40,5 @@ pub enum EvaluationError {
   // Number of arguments, expected number of arguments
   IncorrectParameterCount(usize, usize),
   ConstantReassignment(String),
+  InvalidRange(f64, f64),
 }

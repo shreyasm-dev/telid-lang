@@ -73,6 +73,7 @@ pub enum BinaryOperator {
   GreaterThanOrEqual,
   And,
   Or,
+  Range,
 }
 
 impl ToString for BinaryOperator {
@@ -91,6 +92,7 @@ impl ToString for BinaryOperator {
       BinaryOperator::GreaterThanOrEqual => ">=".to_string(),
       BinaryOperator::And => "&&".to_string(),
       BinaryOperator::Or => "||".to_string(),
+      BinaryOperator::Range => "..".to_string(),
     }
   }
 }

@@ -243,7 +243,15 @@ impl<'a> Lexer<'a> {
       '}' => self.token(TokenKind::RightBrace),
 
       ',' => self.token(TokenKind::Comma),
-      '.' => self.token(TokenKind::Dot),
+      '.' => {
+        if let Some('.') = chars.peek() {
+          chars.next();
+          self.current += 1;
+          self.token(TokenKind::DotDot)
+        } else {
+          self.token(TokenKind::Dot)
+        }
+      }
       ';' => self.token(TokenKind::Semicolon),
 
       _ => self.error(LexError::UnexpectedCharacter(c)),

@@ -37,6 +37,9 @@ for i in y {
 
 println(* 2 3); // telid uses prefix notation
 
+println(.. 1 10); // .. is the range operator (inclusive, inclusive)
+// if you pass a non-integer to .., it will be converted to an integer through truncation
+
 /*
 
 Note: Semicolons are optional, but recommended

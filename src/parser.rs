@@ -51,6 +51,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             just(TokenKind::GreaterThanEquals),
             just(TokenKind::AmpersandAmpersand),
             just(TokenKind::PipePipe),
+            just(TokenKind::DotDot),
           ))
           .then(expression.clone())
           .then(expression.clone())

@@ -8,18 +8,4 @@ let fn fizzbuzz n =
   else
     n;
 
-println(fizzbuzz(1));
-println(fizzbuzz(2));
-println(fizzbuzz(3));
-println(fizzbuzz(4));
-println(fizzbuzz(5));
-println(fizzbuzz(6));
-println(fizzbuzz(7));
-println(fizzbuzz(8));
-println(fizzbuzz(9));
-println(fizzbuzz(10));
-println(fizzbuzz(11));
-println(fizzbuzz(12));
-println(fizzbuzz(13));
-println(fizzbuzz(14));
-println(fizzbuzz(15));
+for i in .. 1 100 println(fizzbuzz(i));

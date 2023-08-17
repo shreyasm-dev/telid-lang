@@ -229,6 +229,17 @@ fn evaluate_expression(
         (BinaryOperator::GreaterThanOrEqual, Value::Number(left), Value::Number(right)) => {
           Ok(Value::Boolean(left >= right))
         }
+        (BinaryOperator::Range, Value::Number(left), Value::Number(right)) => {
+          if left > right {
+            return Err(EvaluationError::InvalidRange(left, right));
+          }
+
+          let mut array = Vec::new();
+          for i in left as usize..=right as usize {
+            array.push(Value::Number(i as f64));
+          }
+          Ok(Value::Array(array))
+        }
 
         // string, string
         (BinaryOperator::LessThan, Value::String(left), Value::String(right)) => {
