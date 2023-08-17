@@ -37,7 +37,6 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .delimited_by(just(TokenKind::LeftParen), just(TokenKind::RightParen))
         .or(
           // Binary operator
-          // Use prefix notation
           choice((
             just(TokenKind::Plus),
             just(TokenKind::Minus),
@@ -78,6 +77,17 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             },
             operand: Box::new(operand),
           }),
+        )
+        .or(
+          // Index
+          just(TokenKind::LeftBracket)
+            .ignore_then(expression.clone())
+            .then_ignore(just(TokenKind::RightBracket))
+            .then(expression.clone())
+            .map(|(index, iterable)| Expression::Index {
+              iterable: Box::new(iterable),
+              index: Box::new(index),
+            }),
         )
         .or(
           delimited_list!(

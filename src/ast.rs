@@ -22,6 +22,10 @@ pub enum Expression {
   StringLiteral(String),
   BooleanLiteral(bool),
   ArrayLiteral(Vec<Expression>),
+  Index {
+    iterable: Box<Expression>,
+    index: Box<Expression>,
+  },
   FunctionCall {
     name: Identifier,
     parameters: Vec<Expression>,
