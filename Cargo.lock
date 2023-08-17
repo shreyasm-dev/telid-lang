@@ -145,9 +145,9 @@ checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
 name = "scoped_stack"
-version = "1.0.4"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "954b65f01de8f0a642614d3ae58d66daf92bc55bb4d57ce5b5683e02f6a73da7"
+checksum = "26e08cb0195d3d0aef27a0845e6901004659caea95cc9e3398c13f88553f672a"
 
 [[package]]
 name = "stacker"
