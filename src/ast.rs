@@ -28,7 +28,7 @@ pub enum Expression {
   },
   FunctionCall {
     name: Identifier,
-    parameters: Vec<Expression>,
+    arguments: Vec<Expression>,
   },
   If {
     condition: Box<Expression>,
@@ -71,9 +71,39 @@ pub enum BinaryOperator {
   Or,
 }
 
+impl ToString for BinaryOperator {
+  fn to_string(&self) -> String {
+    match self {
+      BinaryOperator::Add => "+".to_string(),
+      BinaryOperator::Subtract => "-".to_string(),
+      BinaryOperator::Multiply => "*".to_string(),
+      BinaryOperator::Divide => "/".to_string(),
+      BinaryOperator::Modulo => "%".to_string(),
+      BinaryOperator::Equal => "==".to_string(),
+      BinaryOperator::NotEqual => "!=".to_string(),
+      BinaryOperator::LessThan => "<".to_string(),
+      BinaryOperator::LessThanOrEqual => "<=".to_string(),
+      BinaryOperator::GreaterThan => ">".to_string(),
+      BinaryOperator::GreaterThanOrEqual => ">=".to_string(),
+      BinaryOperator::And => "&&".to_string(),
+      BinaryOperator::Or => "||".to_string(),
+    }
+  }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum UnaryOperator {
   Identity,
   Negate,
   Not,
+}
+
+impl ToString for UnaryOperator {
+  fn to_string(&self) -> String {
+    match self {
+      UnaryOperator::Identity => "+".to_string(),
+      UnaryOperator::Negate => "-".to_string(),
+      UnaryOperator::Not => "!".to_string(),
+    }
+  }
 }

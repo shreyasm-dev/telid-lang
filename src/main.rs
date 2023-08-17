@@ -4,6 +4,7 @@ use crate::{
 };
 use ariadne::{Label, Report, ReportKind, Source};
 use chumsky::{error::SimpleReason, Parser};
+use evaluator::evaluate;
 use lexer::Lexer;
 use parser::parser;
 
@@ -115,7 +116,11 @@ fn main() {
     },
   );
 
-  let result = evaluator::evaluate(ast.unwrap(), scope);
-
-  println!("{:#?}", result);
+  match evaluate(ast.unwrap(), scope) {
+    Ok(_) => {}
+    Err(error) => {
+      println!("{:?}", error);
+      std::process::exit(1);
+    }
+  }
 }

@@ -1,5 +1,5 @@
 use crate::{
-  ast::{Expression, Statement},
+  ast::{Expression, Statement, UnaryOperator, BinaryOperator},
   error::EvaluationError,
 };
 use scoped_stack::ScopedStack;
@@ -47,7 +47,23 @@ fn evaluate_statement(
       Ok(value)
     }
     Statement::ExpressionStatement(expression) => evaluate_expression(expression, &mut scope),
-    _ => todo!(),
+    Statement::FunctionDeclaration {
+      name,
+      parameters,
+      body,
+    } => {
+      scope.insert(
+        name.0,
+        Variable {
+          value: Value::Function {
+            parameters: parameters.iter().map(|p| p.0.clone()).collect(),
+            body,
+          },
+          constant: false,
+        },
+      );
+      Ok(Value::Void)
+    }
   }
 }
 
@@ -90,7 +106,7 @@ fn evaluate_expression(
       }
     }
     // name: Identifier, parameters: Vec<Expression>
-    Expression::FunctionCall { name, parameters } => {
+    Expression::FunctionCall { name, arguments } => {
       let function = match scope.get(&name.0) {
         Some(variable) => variable.value.clone(),
         None => return Err(EvaluationError::UndefinedVariable(name.0)),
@@ -101,19 +117,96 @@ fn evaluate_expression(
           parameter_count,
           function,
         } => {
-          if parameters.len() != parameter_count {
+          if arguments.len() != parameter_count {
             return Err(EvaluationError::IncorrectParameterCount(
-              parameters.len(),
+              arguments.len(),
               parameter_count,
             ));
           }
           let mut passed_parameters: Vec<Value> = Vec::new();
-          for parameter in parameters {
+          for parameter in arguments {
             passed_parameters.push(evaluate_expression(parameter, &mut scope)?);
           }
           function(passed_parameters)
         }
-        _ => todo!(),
+        Value::Function { parameters, body } => {
+          if parameters.len() != parameters.len() {
+            return Err(EvaluationError::IncorrectParameterCount(
+              parameters.len(),
+              parameters.len(),
+            ));
+          }
+          scope.push_scope();
+          for (parameter, value) in parameters.iter().zip(arguments) {
+            let value = evaluate_expression(value, &mut scope)?;
+            scope.insert(
+              parameter.clone(),
+              Variable {
+                value,
+                constant: true,
+              },
+            );
+          }
+          let result = evaluate_statement(*body, &mut scope);
+          scope.pop_scope();
+          result
+        }
+        _ => Err(EvaluationError::InvalidType(
+          function.as_ref().to_string(),
+          vec!["Function".to_string()],
+        )),
+      }
+    }
+    Expression::Unary { operator, operand } => {
+      let operand = evaluate_expression(*operand, &mut scope)?;
+      match (operator.clone(), operand.clone()) {
+        (UnaryOperator::Negate, Value::Number(number)) => Ok(Value::Number(-number)),
+        (UnaryOperator::Not, Value::Boolean(boolean)) => Ok(Value::Boolean(!boolean)),
+        _ => Err(EvaluationError::InvalidOperator(
+          operator.to_string(),
+          operand.as_ref().to_string(),
+          "".to_string(),
+        )),
+      }
+    }
+    Expression::Binary {
+      operator,
+      left,
+      right,
+    } => {
+      let left = evaluate_expression(*left, &mut scope)?;
+      let right = evaluate_expression(*right, &mut scope)?;
+      match (operator.clone(), left.clone(), right.clone()) {
+        (operator, Value::Number(left), Value::Number(right)) => match operator {
+          BinaryOperator::Add => Ok(Value::Number(left + right)),
+          BinaryOperator::Subtract => Ok(Value::Number(left - right)),
+          BinaryOperator::Multiply => Ok(Value::Number(left * right)),
+          BinaryOperator::Divide => Ok(Value::Number(left / right)),
+          BinaryOperator::Modulo => Ok(Value::Number(left % right)),
+          BinaryOperator::Equal => Ok(Value::Boolean(left == right)),
+          BinaryOperator::NotEqual => Ok(Value::Boolean(left != right)),
+          BinaryOperator::LessThan => Ok(Value::Boolean(left < right)),
+          BinaryOperator::LessThanOrEqual => Ok(Value::Boolean(left <= right)),
+          BinaryOperator::GreaterThan => Ok(Value::Boolean(left > right)),
+          BinaryOperator::GreaterThanOrEqual => Ok(Value::Boolean(left >= right)),
+          BinaryOperator::And => Ok(Value::Boolean((left != 0.0) && (right != 0.0))),
+          BinaryOperator::Or => Ok(Value::Boolean((left != 0.0) || (right != 0.0))),
+        },
+        (operator, Value::String(left), Value::String(right)) => match operator {
+          BinaryOperator::Add => Ok(Value::String(left + &right)),
+          BinaryOperator::Equal => Ok(Value::Boolean(left == right)),
+          BinaryOperator::NotEqual => Ok(Value::Boolean(left != right)),
+          _ => Err(EvaluationError::InvalidOperator(
+            operator.to_string(),
+            left.to_string(),
+            right.to_string(),
+          )),
+        },
+        (operator, left, right) => Err(EvaluationError::InvalidOperator(
+          operator.to_string(),
+          left.as_ref().to_string(),
+          right.as_ref().to_string(),
+        )),
       }
     }
     _ => todo!(),
@@ -159,7 +252,10 @@ impl ToString for Value {
         string.push_str("]");
         string
       }
-      Value::Function { parameters, body: _ } => {
+      Value::Function {
+        parameters,
+        body: _,
+      } => {
         let mut string = String::from("fn (");
         for parameter in parameters {
           string.push_str(&parameter);
@@ -168,7 +264,9 @@ impl ToString for Value {
         string.push_str(") ");
         string
       }
-      Value::RustFunction { parameter_count, .. } => {
+      Value::RustFunction {
+        parameter_count, ..
+      } => {
         format!("RustFn({})", parameter_count)
       }
     }

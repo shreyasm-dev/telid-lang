@@ -108,7 +108,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
               just(TokenKind::LeftParen),
               just(TokenKind::RightParen)
             ))
-            .map(|(name, parameters)| Expression::FunctionCall { name, parameters }),
+            .map(|(name, arguments)| Expression::FunctionCall { name, arguments }),
         )
         .or(
           // If expression
