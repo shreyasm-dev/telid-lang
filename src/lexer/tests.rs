@@ -4,6 +4,7 @@ use ordered_float::OrderedFloat;
 #[test]
 fn test_literals() {
   let source = "1 + 2.25";
+
   let mut lexer = Lexer::new(source);
   let tokens = lexer.lex(true);
 
@@ -38,6 +39,7 @@ fn test_literals() {
   );
 
   let source = "'This is a string\\nIt can handle newlines (without \\\\n)\nSlash\\'s string literals are cool'";
+
   let mut lexer = Lexer::new(source);
   let tokens = lexer.lex(true);
 
@@ -59,6 +61,7 @@ fn test_literals() {
   );
 
   let source = "true false void";
+
   let mut lexer = Lexer::new(source);
   let tokens = lexer.lex(true);
 
@@ -96,6 +99,7 @@ fn test_literals() {
 #[test]
 fn test_identifiers_keywords() {
   let source = "let x letx xletx xlet";
+
   let mut lexer = Lexer::new(source);
   let tokens = lexer.lex(true);
 
