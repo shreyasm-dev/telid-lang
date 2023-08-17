@@ -1,11 +1,12 @@
 use crate::{evaluator::scope::Scope, lexer::tokens::TokenKind};
 use ariadne::Source;
 use chumsky::Parser;
+use colored::Colorize;
 use evaluator::{evaluate, scope, value::Value};
 use inquire::{
   set_global_render_config,
   ui::{RenderConfig, StyleSheet, Styled},
-  Text, InquireError,
+  InquireError, Text,
 };
 use lexer::Lexer;
 use parser::parser;
@@ -64,7 +65,9 @@ fn run_repl() {
         }
       }
       Err(error) => match error {
-        InquireError::OperationCanceled | InquireError::OperationInterrupted => println!("Type exit(0) to exit"),
+        InquireError::OperationCanceled | InquireError::OperationInterrupted => {
+          println!("Type exit(0) to exit")
+        }
         _ => panic!("Unexpected error: {:?}", error),
       },
     }
@@ -111,7 +114,7 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
   match evaluate(ast.unwrap(), scope.clone()) {
     Ok(scope) => Ok(scope),
     Err(error) => {
-      eprintln!("{}", error.to_string());
+      eprintln!("{}", error.to_string().red());
       Err(())
     }
   }

@@ -1,5 +1,6 @@
 use ariadne::{Label, Report, ReportKind};
 use std::ops::Range;
+use strum_macros::AsRefStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LexError {
@@ -29,7 +30,7 @@ impl ToString for LexError {
   }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, AsRefStr)]
 pub enum EvaluationError {
   UndefinedVariable(String),
   InvalidOperator(String, String, String),
@@ -44,34 +45,31 @@ pub enum EvaluationError {
 impl ToString for EvaluationError {
   fn to_string(&self) -> String {
     match self {
-      EvaluationError::UndefinedVariable(identifier) => {
-        format!("Undefined variable: {:?}", identifier)
-      }
-      EvaluationError::InvalidOperator(operator, left, right) => format!(
-        "Invalid operator for types {:?} and {:?}: {:?}",
-        left, right, operator
+      EvaluationError::AssertionFailed => self.as_ref().to_string(),
+      _ => format!(
+        "{}: {}",
+        self.as_ref(),
+        match self {
+          EvaluationError::UndefinedVariable(identifier) => identifier.to_string(),
+          EvaluationError::InvalidOperator(operator, left, right) => format!(
+            "{:?} {:?} {:?}",
+            left,
+            operator,
+            right, // Do we want to use prefix notation here like in the rest of the language?
+          ),
+          EvaluationError::InvalidType(found, expected) =>
+            format!("found {:?}, expected one of {:?}", found, expected),
+          EvaluationError::IndexOutOfBounds(index, length) => format!(
+            "index {:?} is not within the range 0..{:?} (inclusive)",
+            index, length
+          ),
+          EvaluationError::IncorrectParameterCount(found, expected) =>
+            format!("expected {}, found {}", expected, found),
+          EvaluationError::ConstantReassignment(identifier) => identifier.to_string(),
+          EvaluationError::InvalidRange(start, end) => format!("{}..{}", start, end),
+          _ => unreachable!(),
+        }
       ),
-      EvaluationError::InvalidType(found, expected) => {
-        format!(
-          "Invalid type: found {:?}, expected one of {:?}",
-          found, expected
-        )
-      }
-      EvaluationError::IndexOutOfBounds(index, length) => format!(
-        "Index out of bounds: index {:?} is not within the range 0..{:?} (inclusive)",
-        index, length
-      ),
-      EvaluationError::IncorrectParameterCount(found, expected) => format!(
-        "Incorrect number of parameters: expected {}, found {}",
-        expected, found
-      ),
-      EvaluationError::ConstantReassignment(identifier) => {
-        format!("Cannot reassign constant: {}", identifier)
-      }
-      EvaluationError::InvalidRange(start, end) => {
-        format!("Invalid range: {}..{}", start, end)
-      }
-      EvaluationError::AssertionFailed => "Assertion failed".to_string(),
     }
   }
 }
