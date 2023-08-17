@@ -68,3 +68,11 @@ Adding a semicolon would fix this
 ```
 
 Look at `examples/` for more examples
+
+## Global functions
+
+- `println(s)`: Prints `s` to stdout
+- `print(s)`: Prints `s` to stdout without a newline
+- `exit(n)`: Exits the program with exit code `n`
+- `readln()`: Reads a line from stdin
+- `assert(c)`: Asserts that `c` is true
