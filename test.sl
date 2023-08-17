@@ -1,5 +1,43 @@
-let x = 5;
-let const y = 6;
-let fn square x = * x x;
+// this is a comment
+/*
+  this is a multiline comment
+*/
 
-(+ (+ x y) z);
+let a = 1; // variables are mutable by default
+let const b = 2; // unless you use the const keyword
+
+let fn factorial n =
+  if == n 0
+    1
+  else
+    * n factorial(- n 1);
+
+println(factorial(5)); // 120
+
+let y = [1, 2, 3]; // this is an array literal
+
+for i in y {
+  println(i);
+}
+
+println(* 2 3); // slash uses prefix notation
+
+/*
+
+Note: Semicolons are optional, but recommended
+
+Take the following example:
+
+let x = y
+
+(* 2 3)
+
+x would be equal to y(* 2 3), not y, as a first glance might suggest
+
+let x = y;
+
+(* 2 3)
+
+Adding a semicolon would fix this
+
+*/
