@@ -209,7 +209,50 @@ fn evaluate_expression(
         )),
       }
     }
-    _ => todo!(),
+    Expression::If { condition, consequence, alternative } => {
+      let condition = evaluate_expression(*condition, &mut scope)?;
+      match condition {
+        Value::Boolean(boolean) => {
+          if boolean {
+            evaluate_statement(*consequence, &mut scope)
+          } else {
+            match *alternative {
+              Some(alternative) => evaluate_statement(alternative, &mut scope),
+              None => Ok(Value::Void),
+            }
+          }
+        }
+        _ => Err(EvaluationError::InvalidType(
+          condition.as_ref().to_string(),
+          vec!["Boolean".to_string()],
+        )),
+      }
+    }
+    Expression::For { variable, iterable, body } => {
+      let iterable = evaluate_expression(*iterable, &mut scope)?;
+      match iterable {
+        Value::Array(array) => {
+          let mut value = Vec::new();
+          for element in array {
+            scope.push_scope();
+            scope.insert(
+              variable.0.clone(),
+              Variable {
+                value: element.clone(),
+                constant: true,
+              },
+            );
+            value.push(evaluate_statement(*body.clone(), &mut scope)?);
+            scope.pop_scope();
+          }
+          Ok(Value::Array(value))
+        }
+        _ => Err(EvaluationError::InvalidType(
+          iterable.as_ref().to_string(),
+          vec!["Array".to_string()],
+        )),
+      }
+    }
   }
 }
 
