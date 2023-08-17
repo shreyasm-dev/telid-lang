@@ -71,7 +71,7 @@ fn evaluate_statement(
           if variable.constant {
             Err(EvaluationError::ConstantReassignment(name.0))
           } else {
-            scope.insert_scope(
+            scope.insert_existing(
               name.0,
               Variable {
                 value: value.clone(),
