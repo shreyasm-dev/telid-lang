@@ -1,6 +1,14 @@
 # slash
 
-slash is a dynamically-typed, interpreted scripting language
+slash is a dynamically-typed, interpreted language
+
+This is a learning project. It's not good. At all.
+
+If I were to go back and do things better, I would:
+
+- Implement infix notation
+- Use better index access syntax (the only reason it's a prefix operator is because it didn't work as postfix and I didn't want to spend time figuring out why)
+- Figure out the semicolon mess
 
 ## Example
 
