@@ -50,7 +50,7 @@ impl ToString for EvaluationError {
         "Invalid operator for types {:?} and {:?}: {:?}",
         left, right, operator
       ),
-      EvaluationError::InvalidType(expected, found) => {
+      EvaluationError::InvalidType(found, expected) => {
         format!(
           "Invalid type: found {:?}, expected one of {:?}",
           found, expected
