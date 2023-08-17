@@ -1,8 +1,8 @@
 use crate::{
   evaluator::{
     evaluate,
+    scope::Scope,
     value::{Value, Variable},
-    Scope,
   },
   lexer::Lexer,
   parser::parser,
