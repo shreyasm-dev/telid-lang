@@ -1,13 +1,7 @@
-use crate::{
-  evaluator::{
-    value::{Value, Variable},
-    Scope,
-  },
-  lexer::tokens::TokenKind,
-};
+use crate::{evaluator::scope::Scope, lexer::tokens::TokenKind};
 use ariadne::{Label, Report, ReportKind, Source};
 use chumsky::{error::SimpleReason, Parser};
-use evaluator::evaluate;
+use evaluator::{evaluate, scope};
 use lexer::Lexer;
 use parser::parser;
 
@@ -19,17 +13,25 @@ mod parser;
 fn main() {
   let args = std::env::args().collect::<Vec<_>>();
   let path = args.get(1).expect("Expected path to source file").as_str();
-  let source = std::fs::read_to_string(path).expect("Failed to read source file");
 
-  let mut lexer = Lexer::new(source.as_str().clone());
+  run_file(path);
+}
+
+fn run_file(path: &str) {
+  let source = std::fs::read_to_string(path).expect("Failed to read source file");
+  run(&source, path, scope::default());
+}
+
+fn run(source: &str, id: &str, scope: Scope) {
+  let mut lexer = Lexer::new(source.clone());
   let tokens = lexer.lex(false);
 
   for token in tokens.clone() {
     match token.kind {
       TokenKind::Error(error) => {
         error
-          .report(path, token.span)
-          .print((path, Source::from(source.clone())))
+          .report(id, token.span)
+          .print((id, Source::from(source.clone())))
           .unwrap();
 
         std::process::exit(1);
@@ -71,51 +73,21 @@ fn main() {
 
       Report::build(
         ReportKind::Error,
-        path,
+        id,
         tokens.get(error.span().start).unwrap().span.start,
       )
       .with_message(message)
       .with_label(Label::new((
-        path,
+        id,
         tokens.get(error.span().start).unwrap().span.clone(),
       )))
       .finish()
-      .print((path, Source::from(source.clone())))
+      .print((id, Source::from(source.clone())))
       .unwrap();
     }
 
     std::process::exit(1);
   }
-
-  let mut scope = Scope::new();
-
-  scope.insert(
-    String::from("println"),
-    Variable {
-      value: Value::RustFunction {
-        parameter_count: 1,
-        function: |parameters| {
-          println!("{}", parameters[0].to_string());
-          Ok(Value::Void)
-        },
-      },
-      constant: true,
-    },
-  );
-
-  scope.insert(
-    String::from("print"),
-    Variable {
-      value: Value::RustFunction {
-        parameter_count: 1,
-        function: |parameters| {
-          print!("{}", parameters[0].to_string());
-          Ok(Value::Void)
-        },
-      },
-      constant: true,
-    },
-  );
 
   match evaluate(ast.unwrap(), scope) {
     Ok(_) => {}

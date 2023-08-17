@@ -1,16 +1,16 @@
-use super::value::{Value, Variable};
+use super::{
+  scope::Scope,
+  value::{Value, Variable},
+};
 use crate::{
   error::EvaluationError,
   parser::ast::{BinaryOperator, Expression, Statement, UnaryOperator},
 };
-use scoped_stack::ScopedStack;
-
-pub type Scope<T> = ScopedStack<String, T>;
 
 pub fn evaluate(
   program: Vec<Statement>,
-  mut scope: Scope<Variable>,
-) -> Result<Scope<Variable>, EvaluationError> {
+  mut scope: Scope,
+) -> Result<Scope, EvaluationError> {
   for statement in program {
     evaluate_statement(statement, &mut scope)?;
   }
@@ -19,7 +19,7 @@ pub fn evaluate(
 
 fn evaluate_statement(
   statement: Statement,
-  mut scope: &mut Scope<Variable>,
+  mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
   match statement {
     Statement::Block(statements) => {
@@ -89,7 +89,7 @@ fn evaluate_statement(
 
 fn evaluate_expression(
   expression: Expression,
-  mut scope: &mut Scope<Variable>,
+  mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
   match expression {
     Expression::Void => Ok(Value::Void),
