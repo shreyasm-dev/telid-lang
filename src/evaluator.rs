@@ -1,5 +1,5 @@
 use crate::{
-  ast::{Expression, Statement, UnaryOperator, BinaryOperator},
+  ast::{BinaryOperator, Expression, Statement, UnaryOperator},
   error::EvaluationError,
 };
 use scoped_stack::ScopedStack;
@@ -209,7 +209,11 @@ fn evaluate_expression(
         )),
       }
     }
-    Expression::If { condition, consequence, alternative } => {
+    Expression::If {
+      condition,
+      consequence,
+      alternative,
+    } => {
       let condition = evaluate_expression(*condition, &mut scope)?;
       match condition {
         Value::Boolean(boolean) => {
@@ -228,7 +232,11 @@ fn evaluate_expression(
         )),
       }
     }
-    Expression::For { variable, iterable, body } => {
+    Expression::For {
+      variable,
+      iterable,
+      body,
+    } => {
       let iterable = evaluate_expression(*iterable, &mut scope)?;
       match iterable {
         Value::Array(array) => {
