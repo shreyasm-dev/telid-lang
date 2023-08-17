@@ -125,7 +125,6 @@ impl<'a> Lexer<'a> {
         }
       }
 
-      // TODO: Implement shell literals (and shell commands)
       'a'..='z' | 'A'..='Z' | '_' => {
         let mut literal = c.to_string();
 

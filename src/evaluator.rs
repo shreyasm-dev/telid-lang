@@ -177,31 +177,70 @@ fn evaluate_expression(
       let left = evaluate_expression(*left, &mut scope)?;
       let right = evaluate_expression(*right, &mut scope)?;
       match (operator.clone(), left.clone(), right.clone()) {
-        (operator, Value::Number(left), Value::Number(right)) => match operator {
-          BinaryOperator::Add => Ok(Value::Number(left + right)),
-          BinaryOperator::Subtract => Ok(Value::Number(left - right)),
-          BinaryOperator::Multiply => Ok(Value::Number(left * right)),
-          BinaryOperator::Divide => Ok(Value::Number(left / right)),
-          BinaryOperator::Modulo => Ok(Value::Number(left % right)),
-          BinaryOperator::Equal => Ok(Value::Boolean(left == right)),
-          BinaryOperator::NotEqual => Ok(Value::Boolean(left != right)),
-          BinaryOperator::LessThan => Ok(Value::Boolean(left < right)),
-          BinaryOperator::LessThanOrEqual => Ok(Value::Boolean(left <= right)),
-          BinaryOperator::GreaterThan => Ok(Value::Boolean(left > right)),
-          BinaryOperator::GreaterThanOrEqual => Ok(Value::Boolean(left >= right)),
-          BinaryOperator::And => Ok(Value::Boolean((left != 0.0) && (right != 0.0))),
-          BinaryOperator::Or => Ok(Value::Boolean((left != 0.0) || (right != 0.0))),
-        },
-        (operator, Value::String(left), Value::String(right)) => match operator {
-          BinaryOperator::Add => Ok(Value::String(left + &right)),
-          BinaryOperator::Equal => Ok(Value::Boolean(left == right)),
-          BinaryOperator::NotEqual => Ok(Value::Boolean(left != right)),
-          _ => Err(EvaluationError::InvalidOperator(
-            operator.to_string(),
-            left.to_string(),
-            right.to_string(),
-          )),
-        },
+        // any type, any type
+        (BinaryOperator::Equal, left, right) => Ok(Value::Boolean(left == right)),
+        (BinaryOperator::NotEqual, left, right) => Ok(Value::Boolean(left != right)),
+
+        // number, number
+        (BinaryOperator::Add, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Number(left + right))
+        }
+        (BinaryOperator::Subtract, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Number(left - right))
+        }
+        (BinaryOperator::Multiply, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Number(left * right))
+        }
+        (BinaryOperator::Divide, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Number(left / right))
+        }
+        (BinaryOperator::Modulo, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Number(left % right))
+        }
+        (BinaryOperator::LessThan, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Boolean(left < right))
+        }
+        (BinaryOperator::LessThanOrEqual, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Boolean(left <= right))
+        }
+        (BinaryOperator::GreaterThan, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Boolean(left > right))
+        }
+        (BinaryOperator::GreaterThanOrEqual, Value::Number(left), Value::Number(right)) => {
+          Ok(Value::Boolean(left >= right))
+        }
+
+        // string, string
+        (BinaryOperator::LessThan, Value::String(left), Value::String(right)) => {
+          Ok(Value::Boolean(left < right))
+        }
+        (BinaryOperator::LessThanOrEqual, Value::String(left), Value::String(right)) => {
+          Ok(Value::Boolean(left <= right))
+        }
+        (BinaryOperator::GreaterThan, Value::String(left), Value::String(right)) => {
+          Ok(Value::Boolean(left > right))
+        }
+        (BinaryOperator::GreaterThanOrEqual, Value::String(left), Value::String(right)) => {
+          Ok(Value::Boolean(left >= right))
+        }
+
+        // boolean, boolean
+        (BinaryOperator::And, Value::Boolean(left), Value::Boolean(right)) => {
+          Ok(Value::Boolean(left && right))
+        }
+        (BinaryOperator::Or, Value::Boolean(left), Value::Boolean(right)) => {
+          Ok(Value::Boolean(left || right))
+        }
+
+        // string, any type
+        (BinaryOperator::Add, Value::String(left), right) => {
+          Ok(Value::String(format!("{}{}", left, right.to_string())))
+        }
+        (BinaryOperator::Add, left, Value::String(right)) => {
+          Ok(Value::String(format!("{}{}", left.to_string(), right)))
+        }
+
+        // unhandled cases
         (operator, left, right) => Err(EvaluationError::InvalidOperator(
           operator.to_string(),
           left.as_ref().to_string(),
@@ -290,19 +329,18 @@ pub enum Value {
 impl ToString for Value {
   fn to_string(&self) -> String {
     match self {
-      Value::Void => "Void".to_string(),
+      Value::Void => "void".to_string(),
       Value::Number(number) => number.to_string(),
       Value::String(string) => string.clone(),
       Value::Boolean(boolean) => boolean.to_string(),
-      Value::Array(array) => {
-        let mut string = String::from("[");
-        for value in array {
-          string.push_str(&value.to_string());
-          string.push_str(", ");
-        }
-        string.push_str("]");
-        string
-      }
+      Value::Array(array) => format!(
+        "[{}]",
+        array
+          .iter()
+          .map(|value| value.to_string())
+          .collect::<Vec<_>>()
+          .join(", ")
+      ),
       Value::Function {
         parameters,
         body: _,
