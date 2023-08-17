@@ -51,5 +51,22 @@ pub fn default() -> Scope {
     },
   );
 
+  scope.insert(
+    String::from("readln"),
+    Variable {
+      value: Value::RustFunction {
+        parameter_count: 0,
+        function: |_| {
+          let mut input = String::new();
+          std::io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+          Ok(Value::String(input.trim().to_string()))
+        },
+      },
+      constant: true,
+    },
+  );
+
   scope
 }
