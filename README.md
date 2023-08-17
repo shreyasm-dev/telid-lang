@@ -36,11 +36,9 @@ for i in y {
 }
 
 let counter = 0;
-
 while <= counter 10 {
   counter = + counter 1;
 }
-
 println(counter); // 11
 
 println(* 2 3); // telid uses prefix notation
