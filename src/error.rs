@@ -32,7 +32,6 @@ impl ToString for LexError {
 #[derive(Debug, Clone, PartialEq)]
 pub enum EvaluationError {
   UndefinedVariable(String),
-  InvalidIndex(f64),
   // Operator, left type, right type
   InvalidOperator(String, String, String),
   InvalidType(String, Vec<String>),
@@ -40,5 +39,4 @@ pub enum EvaluationError {
   IndexOutOfBounds(usize, usize),
   // Number of arguments, expected number of arguments
   IncorrectParameterCount(usize, usize),
-  Custom(String),
 }
