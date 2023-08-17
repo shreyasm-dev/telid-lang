@@ -116,12 +116,54 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .or(literal)
     });
 
-    expression.map(Statement::ExpressionStatement).or(
+    expression.clone().map(Statement::ExpressionStatement).or(
       // Block
       statement
+        .clone()
         .repeated()
         .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
-        .map(Statement::Block),
+        .map(Statement::Block)
+        .or(
+          // Let declaration
+          just(TokenKind::Let)
+            .then(identifier)
+            .then(just(TokenKind::Equals))
+            .then(expression.clone())
+            .map(|(((_, name), _), value)| Statement::LetStatement {
+              name,
+              value,
+              constant: false,
+            }),
+        )
+        .or(
+          // Const declaration
+          just(TokenKind::Let)
+            .then(just(TokenKind::Const))
+            .then(identifier)
+            .then(just(TokenKind::Equals))
+            .then(expression)
+            .map(|((((_, _), name), _), value)| Statement::LetStatement {
+              name,
+              value,
+              constant: true,
+            }),
+        )
+        .or(
+          // Function declaration
+          just(TokenKind::Let)
+            .then(just(TokenKind::Fn))
+            .then(identifier)
+            .then(identifier.repeated())
+            .then(just(TokenKind::Equals))
+            .then(statement.clone())
+            .map(
+              |((((_, name), parameters), _), body)| Statement::FunctionDeclaration {
+                name,
+                parameters,
+                body: Box::new(body),
+              },
+            ),
+        ),
     )
   });
 
