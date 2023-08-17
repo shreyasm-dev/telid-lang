@@ -78,12 +78,12 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
           // If expression
           // TODO: Is there a way to do this without using separate parsers for if and if-else?
           just(TokenKind::If)
-            .then(expression.clone())
+            .ignore_then(expression.clone())
             .then(statement.clone())
-            .then(just(TokenKind::Else))
+            .then_ignore(just(TokenKind::Else))
             .then(statement.clone())
             .map(
-              |((((_, condition), consequence), _), alternative)| Expression::If {
+              |((condition, consequence), alternative)| Expression::If {
                 condition: Box::new(condition),
                 consequence: Box::new(consequence),
                 alternative: Box::new(Some(alternative)),
@@ -91,9 +91,9 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             )
             .or(
               just(TokenKind::If)
-                .then(expression.clone())
+                .ignore_then(expression.clone())
                 .then(statement.clone())
-                .map(|((_, condition), consequence)| Expression::If {
+                .map(|(condition, consequence)| Expression::If {
                   condition: Box::new(condition),
                   consequence: Box::new(consequence),
                   alternative: Box::new(None),
@@ -103,11 +103,11 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .or(
           // For loop
           just(TokenKind::For)
-            .then(identifier)
-            .then(just(TokenKind::In))
+            .ignore_then(identifier)
+            .then_ignore(just(TokenKind::In))
             .then(expression)
             .then(statement.clone())
-            .map(|((((_, variable), _), iterable), body)| Expression::For {
+            .map(|((variable, iterable), body)| Expression::For {
               variable,
               iterable: Box::new(iterable),
               body: Box::new(body),
@@ -126,10 +126,10 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .or(
           // Let declaration
           just(TokenKind::Let)
-            .then(identifier)
-            .then(just(TokenKind::Equals))
+            .ignore_then(identifier)
+            .then_ignore(just(TokenKind::Equals))
             .then(expression.clone())
-            .map(|(((_, name), _), value)| Statement::LetStatement {
+            .map(|(name, value)| Statement::LetStatement {
               name,
               value,
               constant: false,
@@ -138,11 +138,11 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .or(
           // Const declaration
           just(TokenKind::Let)
-            .then(just(TokenKind::Const))
-            .then(identifier)
-            .then(just(TokenKind::Equals))
+            .then_ignore(just(TokenKind::Const))
+            .ignore_then(identifier)
+            .then_ignore(just(TokenKind::Equals))
             .then(expression)
-            .map(|((((_, _), name), _), value)| Statement::LetStatement {
+            .map(|(name, value)| Statement::LetStatement {
               name,
               value,
               constant: true,
@@ -152,12 +152,12 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
           // Function declaration
           just(TokenKind::Let)
             .then(just(TokenKind::Fn))
-            .then(identifier)
+            .ignore_then(identifier)
             .then(identifier.repeated())
-            .then(just(TokenKind::Equals))
+            .then_ignore(just(TokenKind::Equals))
             .then(statement.clone())
             .map(
-              |((((_, name), parameters), _), body)| Statement::FunctionDeclaration {
+              |((name, parameters), body)| Statement::FunctionDeclaration {
                 name,
                 parameters,
                 body: Box::new(body),
@@ -169,6 +169,5 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
 
   statement
     .repeated()
-    .then(just(TokenKind::Eof))
-    .map(|(output, _)| output)
+    .then_ignore(just(TokenKind::Eof))
 }
