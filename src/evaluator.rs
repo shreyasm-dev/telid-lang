@@ -3,7 +3,6 @@ use crate::{
   error::EvaluationError,
 };
 use scoped_stack::ScopedStack;
-use std::collections::HashMap;
 use strum_macros::AsRefStr;
 
 pub type Scope<T> = ScopedStack<String, T>;
@@ -41,12 +40,13 @@ fn evaluate_statement(
       scope.insert(
         name.0,
         Variable {
-          kind: value.clone(),
+          value: value.clone(),
           constant,
         },
       );
       Ok(value)
     }
+    Statement::ExpressionStatement(expression) => evaluate_expression(expression, &mut scope),
     _ => todo!(),
   }
 }
@@ -58,7 +58,7 @@ fn evaluate_expression(
   match expression {
     Expression::Void => Ok(Value::Void),
     Expression::Identifier(identifier) => match scope.get(&identifier.0) {
-      Some(variable) => Ok(variable.kind.clone()),
+      Some(variable) => Ok(variable.value.clone()),
       None => Err(EvaluationError::UndefinedVariable(identifier.0)),
     },
     Expression::NumberLiteral(number) => Ok(Value::Number(number)),
@@ -89,14 +89,41 @@ fn evaluate_expression(
         )),
       }
     }
+    // name: Identifier, parameters: Vec<Expression>
+    Expression::FunctionCall { name, parameters } => {
+      let function = match scope.get(&name.0) {
+        Some(variable) => variable.value.clone(),
+        None => return Err(EvaluationError::UndefinedVariable(name.0)),
+      };
+
+      match function {
+        Value::RustFunction {
+          parameter_count,
+          function,
+        } => {
+          if parameters.len() != parameter_count {
+            return Err(EvaluationError::IncorrectParameterCount(
+              parameters.len(),
+              parameter_count,
+            ));
+          }
+          let mut passed_parameters: Vec<Value> = Vec::new();
+          for parameter in parameters {
+            passed_parameters.push(evaluate_expression(parameter, &mut scope)?);
+          }
+          function(passed_parameters)
+        }
+        _ => todo!(),
+      }
+    }
     _ => todo!(),
   }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Variable {
-  kind: Value,
-  constant: bool,
+  pub value: Value,
+  pub constant: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, AsRefStr)]
@@ -110,4 +137,40 @@ pub enum Value {
     parameters: Vec<String>,
     body: Box<Statement>,
   },
+  RustFunction {
+    parameter_count: usize,
+    function: fn(Vec<Value>) -> Result<Value, EvaluationError>,
+  },
+}
+
+impl ToString for Value {
+  fn to_string(&self) -> String {
+    match self {
+      Value::Void => "Void".to_string(),
+      Value::Number(number) => number.to_string(),
+      Value::String(string) => string.clone(),
+      Value::Boolean(boolean) => boolean.to_string(),
+      Value::Array(array) => {
+        let mut string = String::from("[");
+        for value in array {
+          string.push_str(&value.to_string());
+          string.push_str(", ");
+        }
+        string.push_str("]");
+        string
+      }
+      Value::Function { parameters, body: _ } => {
+        let mut string = String::from("fn (");
+        for parameter in parameters {
+          string.push_str(&parameter);
+          string.push_str(", ");
+        }
+        string.push_str(") ");
+        string
+      }
+      Value::RustFunction { parameter_count, .. } => {
+        format!("RustFn({})", parameter_count)
+      }
+    }
+  }
 }

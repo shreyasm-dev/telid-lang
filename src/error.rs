@@ -39,6 +39,6 @@ pub enum EvaluationError {
   // Index, length
   IndexOutOfBounds(usize, usize),
   // Number of arguments, expected number of arguments
-  IncorrectNumberOfParameters(usize, usize),
+  IncorrectParameterCount(usize, usize),
   Custom(String),
 }
