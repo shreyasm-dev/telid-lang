@@ -8,3 +8,7 @@ let y = for n in x if == % n 2 0 'even' else 'odd';
 for n in x {
   println(+ + n ' - ' [- n 1]y);
 }
+
+let x = 5;
+x = 10;
+println(x);

@@ -12,6 +12,10 @@ pub enum Statement {
     parameters: Vec<Identifier>,
     body: Box<Statement>,
   },
+  Assignment {
+    name: Identifier,
+    value: Expression,
+  },
 }
 
 #[derive(Debug, Clone, PartialEq)]

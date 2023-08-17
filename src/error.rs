@@ -39,4 +39,5 @@ pub enum EvaluationError {
   IndexOutOfBounds(usize, usize),
   // Number of arguments, expected number of arguments
   IncorrectParameterCount(usize, usize),
+  ConstantReassignment(String),
 }

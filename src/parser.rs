@@ -150,57 +150,62 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         .or(literal)
     });
 
-    expression
+    statement
       .clone()
-      .map(Statement::ExpressionStatement)
+      .repeated()
+      .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
+      .map(Statement::Block)
       .or(
-        // Block
-        statement
-          .clone()
-          .repeated()
-          .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
-          .map(Statement::Block)
-          .or(
-            // Let declaration
-            just(TokenKind::Let)
-              .ignore_then(identifier)
-              .then_ignore(just(TokenKind::Equals))
-              .then(expression.clone())
-              .map(|(name, value)| Statement::LetStatement {
-                name,
-                value,
-                constant: false,
-              }),
-          )
-          .or(
-            // Const declaration
-            just(TokenKind::Let)
-              .then_ignore(just(TokenKind::Const))
-              .ignore_then(identifier)
-              .then_ignore(just(TokenKind::Equals))
-              .then(expression)
-              .map(|(name, value)| Statement::LetStatement {
-                name,
-                value,
-                constant: true,
-              }),
-          )
-          .or(
-            // Function declaration
-            just(TokenKind::Let)
-              .then(just(TokenKind::Fn))
-              .ignore_then(identifier)
-              .then(identifier.repeated())
-              .then_ignore(just(TokenKind::Equals))
-              .then(statement.clone())
-              .map(
-                |((name, parameters), body)| Statement::FunctionDeclaration {
-                  name,
-                  parameters,
-                  body: Box::new(body),
-                },
-              ),
+        // Assignment
+        identifier
+          .then_ignore(just(TokenKind::Equals))
+          .then(expression.clone())
+          .map(|(name, value)| Statement::Assignment { name, value }),
+      )
+      .or(
+        // Let declaration
+        just(TokenKind::Let)
+          .ignore_then(identifier)
+          .then_ignore(just(TokenKind::Equals))
+          .then(expression.clone())
+          .map(|(name, value)| Statement::LetStatement {
+            name,
+            value,
+            constant: false,
+          }),
+      )
+      .or(
+        // Const declaration
+        just(TokenKind::Let)
+          .then_ignore(just(TokenKind::Const))
+          .ignore_then(identifier)
+          .then_ignore(just(TokenKind::Equals))
+          .then(expression.clone())
+          .map(|(name, value)| Statement::LetStatement {
+            name,
+            value,
+            constant: true,
+          }),
+      )
+      .or(
+        // Function declaration
+        just(TokenKind::Let)
+          .then(just(TokenKind::Fn))
+          .ignore_then(identifier)
+          .then(identifier.repeated())
+          .then_ignore(just(TokenKind::Equals))
+          .then(statement.clone())
+          .map(
+            |((name, parameters), body)| Statement::FunctionDeclaration {
+              name,
+              parameters,
+              body: Box::new(body),
+            },
           ),
+      )
+      .or(
+        // Expression statement
+        expression.map(Statement::ExpressionStatement),
       )
       .then_ignore(just(TokenKind::Semicolon).or_not())
   });

@@ -64,6 +64,26 @@ fn evaluate_statement(
       );
       Ok(Value::Void)
     }
+    Statement::Assignment { name, value } => {
+      let value = evaluate_expression(value, &mut scope)?;
+      match scope.get(&name.0) {
+        Some(variable) => {
+          if variable.constant {
+            Err(EvaluationError::ConstantReassignment(name.0))
+          } else {
+            scope.insert(
+              name.0,
+              Variable {
+                value: value.clone(),
+                constant: false,
+              },
+            );
+            Ok(value)
+          }
+        }
+        None => Err(EvaluationError::UndefinedVariable(name.0)),
+      }
+    }
   }
 }
 
