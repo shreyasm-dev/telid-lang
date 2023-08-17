@@ -32,13 +32,44 @@ impl ToString for LexError {
 #[derive(Debug, Clone, PartialEq)]
 pub enum EvaluationError {
   UndefinedVariable(String),
-  // Operator, left type, right type
   InvalidOperator(String, String, String),
   InvalidType(String, Vec<String>),
-  // Index, length
   IndexOutOfBounds(usize, usize),
-  // Number of arguments, expected number of arguments
   IncorrectParameterCount(usize, usize),
   ConstantReassignment(String),
   InvalidRange(f64, f64),
+}
+
+impl ToString for EvaluationError {
+  fn to_string(&self) -> String {
+    match self {
+      EvaluationError::UndefinedVariable(identifier) => {
+        format!("Undefined variable: {:?}", identifier)
+      }
+      EvaluationError::InvalidOperator(operator, left, right) => format!(
+        "Invalid operator for types {:?} and {:?}: {:?}",
+        left, right, operator
+      ),
+      EvaluationError::InvalidType(expected, found) => {
+        format!(
+          "Invalid type: found {:?}, expected one of {:?}",
+          found, expected
+        )
+      }
+      EvaluationError::IndexOutOfBounds(index, length) => format!(
+        "Index out of bounds: index {:?} is not within the range 0..{:?} (inclusive)",
+        index, length
+      ),
+      EvaluationError::IncorrectParameterCount(found, expected) => format!(
+        "Incorrect number of parameters: expected {}, found {}",
+        expected, found
+      ),
+      EvaluationError::ConstantReassignment(identifier) => {
+        format!("Cannot reassign constant: {}", identifier)
+      }
+      EvaluationError::InvalidRange(start, end) => {
+        format!("Invalid range: {}..{}", start, end)
+      }
+    }
+  }
 }

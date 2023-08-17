@@ -119,7 +119,7 @@ fn main() {
   match evaluate(ast.unwrap(), scope) {
     Ok(_) => {}
     Err(error) => {
-      println!("{:?}", error);
+      println!("{}", error.to_string());
       std::process::exit(1);
     }
   }
