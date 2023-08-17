@@ -1,5 +1,6 @@
 use super::value::{Value, Variable};
 use scoped_stack::ScopedStack;
+use std::io::{stdin, stdout, Write};
 
 pub type Scope = ScopedStack<String, Variable>;
 
@@ -27,6 +28,7 @@ pub fn default() -> Scope {
         parameter_count: 1,
         function: |parameters| {
           print!("{}", parameters[0].to_string());
+          stdout().flush().unwrap();
           Ok(Value::Void)
         },
       },
@@ -58,9 +60,7 @@ pub fn default() -> Scope {
         parameter_count: 0,
         function: |_| {
           let mut input = String::new();
-          std::io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read line");
+          stdin().read_line(&mut input).expect("Failed to read line");
           Ok(Value::String(input.trim().to_string()))
         },
       },
