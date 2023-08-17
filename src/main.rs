@@ -80,7 +80,7 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
       TokenKind::Error(error) => {
         error
           .report(id, token.span)
-          .print((id, Source::from(source.clone())))
+          .eprint((id, Source::from(source.clone())))
           .unwrap();
 
         return Err(());
@@ -101,7 +101,7 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
   if let Err(error) = ast {
     for error in error {
       simple_error_to_report(error, id, tokens.clone())
-        .print((id, Source::from(source.clone())))
+        .eprint((id, Source::from(source.clone())))
         .unwrap();
     }
 
@@ -111,7 +111,7 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
   match evaluate(ast.unwrap(), scope.clone()) {
     Ok(scope) => Ok(scope),
     Err(error) => {
-      println!("{}", error.to_string());
+      eprintln!("{}", error.to_string());
       Err(())
     }
   }
