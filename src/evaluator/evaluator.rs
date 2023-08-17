@@ -7,7 +7,10 @@ use crate::{
   parser::ast::{BinaryOperator, Expression, Statement, UnaryOperator},
 };
 
-pub fn evaluate(program: Vec<Statement>, mut scope: Scope) -> Result<(Value, Scope), EvaluationError> {
+pub fn evaluate(
+  program: Vec<Statement>,
+  mut scope: Scope,
+) -> Result<(Value, Scope), EvaluationError> {
   let mut value = Value::Void;
   for statement in program {
     value = evaluate_statement(statement, &mut scope)?;
@@ -71,27 +74,25 @@ fn evaluate_statement(
       );
       Ok(Value::Void)
     }
-    Statement::Assignment { name, value } => {
-      match scope.clone().get(&name.0) {
-        Some(variable) => {
-          let value = evaluate_expression(value, &mut scope)?;
+    Statement::Assignment { name, value } => match scope.clone().get(&name.0) {
+      Some(variable) => {
+        let value = evaluate_expression(value, &mut scope)?;
 
-          if variable.constant {
-            Err(EvaluationError::ConstantReassignment(name.0))
-          } else {
-            scope.insert_existing(
-              name.0,
-              Variable {
-                value: value.clone(),
-                constant: false,
-              },
-            );
-            Ok(value)
-          }
+        if variable.constant {
+          Err(EvaluationError::ConstantReassignment(name.0))
+        } else {
+          scope.insert_existing(
+            name.0,
+            Variable {
+              value: value.clone(),
+              constant: false,
+            },
+          );
+          Ok(value)
         }
-        None => Err(EvaluationError::UndefinedVariable(name.0)),
       }
-    }
+      None => Err(EvaluationError::UndefinedVariable(name.0)),
+    },
   }
 }
 

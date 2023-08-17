@@ -4,7 +4,7 @@ use chumsky::Parser;
 use evaluator::{evaluate, scope, value::Value};
 use inquire::{
   set_global_render_config,
-  ui::{RenderConfig, Styled, StyleSheet},
+  ui::{RenderConfig, StyleSheet, Styled},
   Text,
 };
 use lexer::Lexer;
