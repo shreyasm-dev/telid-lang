@@ -59,7 +59,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             operator: operator.to_binary_operator(),
             left: Box::new(left),
             right: Box::new(right),
-          })
+          }),
         )
         .or(
           // Unary operator
@@ -191,5 +191,5 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
     )
   });
 
-  statement.repeated().then_ignore(just(TokenKind::Eof))
+  statement.then_ignore(just(TokenKind::Semicolon)).repeated().then_ignore(just(TokenKind::Eof))
 }

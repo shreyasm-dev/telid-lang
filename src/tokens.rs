@@ -53,6 +53,7 @@ pub enum TokenKind {
 
   Comma,
   Dot,
+  Semicolon,
 
   Error(LexError),
   Eof,

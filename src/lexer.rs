@@ -245,6 +245,7 @@ impl<'a> Lexer<'a> {
 
       ',' => self.token(TokenKind::Comma),
       '.' => self.token(TokenKind::Dot),
+      ';' => self.token(TokenKind::Semicolon),
 
       _ => self.error(LexError::UnexpectedCharacter(c)),
     }
