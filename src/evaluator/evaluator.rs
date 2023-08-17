@@ -63,9 +63,10 @@ fn evaluate_statement(
       Ok(Value::Void)
     }
     Statement::Assignment { name, value } => {
-      let value = evaluate_expression(value, &mut scope)?;
-      match scope.get(&name.0) {
+      match scope.clone().get(&name.0) {
         Some(variable) => {
+          let value = evaluate_expression(value, &mut scope)?;
+
           if variable.constant {
             Err(EvaluationError::ConstantReassignment(name.0))
           } else {
