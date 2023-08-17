@@ -25,7 +25,7 @@ fn test_expression() {
   let result = result.unwrap();
 
   assert_eq!(
-    *result.get(&String::from("x")).unwrap(),
+    *result.1.get(&String::from("x")).unwrap(),
     Variable {
       value: Value::Number(15.0),
       constant: false,

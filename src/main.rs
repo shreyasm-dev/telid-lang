@@ -1,7 +1,7 @@
 use crate::{evaluator::scope::Scope, lexer::tokens::TokenKind};
 use ariadne::Source;
 use chumsky::Parser;
-use evaluator::{evaluate, scope};
+use evaluator::{evaluate, scope, value::Value};
 use inquire::{
   set_global_render_config,
   ui::{RenderConfig, Styled, StyleSheet},
@@ -42,7 +42,7 @@ fn get_repl_render_config() -> RenderConfig {
   render_config
 }
 
-fn run_file(path: &str) -> Result<Scope, ()> {
+fn run_file(path: &str) -> Result<(Value, Scope), ()> {
   let source = std::fs::read_to_string(path).expect("Failed to read source file");
   run(&source, path, scope::default())
 }
@@ -53,13 +53,14 @@ fn run_repl() {
   loop {
     let input = Text::new("").prompt().unwrap();
 
-    if let Ok(scope_) = run(&input, "repl", scope.clone()) {
+    if let Ok((output, scope_)) = run(&input, "repl", scope.clone()) {
+      println!("{}", output.to_string());
       scope = scope_;
     }
   }
 }
 
-fn run(source: &str, id: &str, scope: Scope) -> Result<Scope, ()> {
+fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
   let mut lexer = Lexer::new(source.clone());
   let tokens = lexer.lex(false);
 
