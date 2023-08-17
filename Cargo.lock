@@ -144,6 +144,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
+name = "scoped_stack"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "954b65f01de8f0a642614d3ae58d66daf92bc55bb4d57ce5b5683e02f6a73da7"
+
+[[package]]
 name = "stacker"
 version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,6 +199,7 @@ dependencies = [
  "ariadne",
  "chumsky",
  "ordered-float",
+ "scoped_stack",
  "strum",
  "strum_macros",
 ]

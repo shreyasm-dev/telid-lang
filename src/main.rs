@@ -1,4 +1,4 @@
-use crate::tokens::TokenKind;
+use crate::{evaluator::Scope, tokens::TokenKind};
 use ariadne::{Label, Report, ReportKind, Source};
 use chumsky::{error::SimpleReason, Parser};
 use lexer::Lexer;
@@ -6,6 +6,7 @@ use parser::parser;
 
 mod ast;
 mod error;
+mod evaluator;
 mod lexer;
 mod parser;
 mod tokens;
@@ -41,46 +42,48 @@ fn main() {
       .collect::<Vec<_>>(),
   );
 
-  match ast {
-    Ok(ast) => println!("{:#?}", ast),
-    Err(error) => {
-      for error in error {
-        let message = match error.reason() {
-          SimpleReason::Unexpected => {
-            format!(
-              "Unexpected token: {:?}, expected one of: {:?}",
-              match error.found() {
+  if let Err(error) = ast {
+    for error in error {
+      let message = match error.reason() {
+        SimpleReason::Unexpected => {
+          format!(
+            "Unexpected token: {:?}, expected one of: {:?}",
+            match error.found() {
+              Some(token) => token.as_ref(),
+              None => "None",
+            },
+            error
+              .expected()
+              .map(|t| match t {
                 Some(token) => token.as_ref(),
                 None => "None",
-              },
-              error
-                .expected()
-                .map(|t| match t {
-                  Some(token) => token.as_ref(),
-                  None => "None",
-                })
-                .collect::<Vec<_>>()
-            )
-          }
-          _ => format!("{:?}", error),
-        };
+              })
+              .collect::<Vec<_>>()
+          )
+        }
+        _ => format!("{:?}", error),
+      };
 
-        Report::build(
-          ReportKind::Error,
-          path,
-          tokens.get(error.span().start).unwrap().span.start,
-        )
-        .with_message(message)
-        .with_label(Label::new((
-          path,
-          tokens.get(error.span().start).unwrap().span.clone(),
-        )))
-        .finish()
-        .print((path, Source::from(source.clone())))
-        .unwrap();
-      }
-
-      std::process::exit(1);
+      Report::build(
+        ReportKind::Error,
+        path,
+        tokens.get(error.span().start).unwrap().span.start,
+      )
+      .with_message(message)
+      .with_label(Label::new((
+        path,
+        tokens.get(error.span().start).unwrap().span.clone(),
+      )))
+      .finish()
+      .print((path, Source::from(source.clone())))
+      .unwrap();
     }
+
+    std::process::exit(1);
   }
+
+  let scope = Scope::new();
+  let result = evaluator::evaluate(ast.unwrap(), scope);
+
+  println!("{:#?}", result);
 }
