@@ -111,7 +111,6 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         )
         .or(
           // If expression
-          // TODO: Is there a way to do this without using separate parsers for if and if-else?
           just(TokenKind::If)
             .ignore_then(expression.clone())
             .then(statement.clone())
