@@ -334,6 +334,22 @@ fn evaluate_expression(
           }
           Ok(Value::Array(value))
         }
+        Value::String(string) => {
+          let mut value = Vec::new();
+          for character in string.chars() {
+            scope.push_scope();
+            scope.insert(
+              variable.0.clone(),
+              Variable {
+                value: Value::String(character.to_string()),
+                constant: true,
+              },
+            );
+            value.push(evaluate_statement(*body.clone(), &mut scope)?);
+            scope.pop_scope();
+          }
+          Ok(Value::Array(value))
+        }
         _ => Err(EvaluationError::InvalidType(
           iterable.as_ref().to_string(),
           vec!["Array".to_string()],
