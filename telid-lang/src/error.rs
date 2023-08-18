@@ -57,7 +57,7 @@ impl EvaluationError {
     span: Range<usize>,
     tokens: Vec<(TokenKind, Range<usize>)>,
   ) -> Report<'a, (&str, std::ops::Range<usize>)> {
-    let span = tokens[span.start].1.clone();
+    let span = tokens[span.start].1.start..tokens[span.end - 1].1.end;
     Report::build(ReportKind::Error, src, span.start)
       .with_message(self.kind.to_string())
       .with_label(Label::new((src, span)))
