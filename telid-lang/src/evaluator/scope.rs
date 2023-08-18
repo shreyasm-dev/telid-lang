@@ -1,10 +1,14 @@
-use crate::error::EvaluationError;
-
-use super::value::{Value, Variable};
+use super::{
+  util::error,
+  value::{Value, Variable},
+};
+use crate::error::EvaluationErrorKind;
 use scoped_stack::ScopedStack;
 use std::io::{stdin, stdout, Write};
 
 pub type Scope = ScopedStack<String, Variable>;
+
+// TODO: Pass spans to all Rust functions
 
 pub fn default() -> Scope {
   let mut scope = Scope::new();
@@ -14,7 +18,7 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| {
+        function: |_, parameters| {
           println!("{}", parameters[0].to_string());
           Ok(Value::Void)
         },
@@ -28,7 +32,7 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| {
+        function: |_, parameters| {
           print!("{}", parameters[0].to_string());
           stdout().flush().unwrap();
           Ok(Value::Void)
@@ -43,12 +47,15 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| match parameters[0] {
+        function: |span, parameters| match parameters[0] {
           Value::Number(code) => std::process::exit(code as i32),
-          _ => Err(EvaluationError::InvalidType(
-            parameters[0].as_ref().to_string(),
-            vec![String::from("Number")],
-          )),
+          _ => error(
+            EvaluationErrorKind::InvalidType(
+              parameters[0].as_ref().to_string(),
+              vec![String::from("Number")],
+            ),
+            span,
+          ),
         },
       },
       constant: true,
@@ -60,7 +67,7 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 0,
-        function: |_| {
+        function: |_, _| {
           let mut input = String::new();
           stdin().read_line(&mut input).expect("Failed to read line");
           Ok(Value::String(input.trim().to_string()))
@@ -75,13 +82,16 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| match parameters[0] {
+        function: |span, parameters| match parameters[0] {
           Value::Boolean(true) => Ok(Value::Void),
-          Value::Boolean(false) => Err(EvaluationError::AssertionFailed),
-          _ => Err(EvaluationError::InvalidType(
-            parameters[0].as_ref().to_string(),
-            vec![String::from("Boolean")],
-          )),
+          Value::Boolean(false) => error(EvaluationErrorKind::AssertionFailed, span),
+          _ => error(
+            EvaluationErrorKind::InvalidType(
+              parameters[0].as_ref().to_string(),
+              vec![String::from("Boolean")],
+            ),
+            span,
+          ),
         },
       },
       constant: true,
@@ -93,15 +103,18 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| match &parameters[0] {
+        function: |span, parameters| match &parameters[0] {
           Value::String(string) => match string.parse() {
             Ok(number) => Ok(Value::Number(number)),
             Err(_) => Ok(Value::Void),
           },
-          _ => Err(EvaluationError::InvalidType(
-            parameters[0].as_ref().to_string(),
-            vec![String::from("String")],
-          )),
+          _ => error(
+            EvaluationErrorKind::InvalidType(
+              parameters[0].as_ref().to_string(),
+              vec![String::from("String")],
+            ),
+            span,
+          ),
         },
       },
       constant: true,
@@ -113,7 +126,7 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| Ok(Value::String(parameters[0].as_ref().to_string())),
+        function: |_, parameters| Ok(Value::String(parameters[0].as_ref().to_string())),
       },
       constant: true,
     },
@@ -124,13 +137,16 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| match &parameters[0] {
+        function: |span, parameters| match &parameters[0] {
           Value::String(string) => Ok(Value::Number(string.len() as f64)),
           Value::Array(array) => Ok(Value::Number(array.len() as f64)),
-          _ => Err(EvaluationError::InvalidType(
-            parameters[0].as_ref().to_string(),
-            vec![String::from("String"), String::from("Array")],
-          )),
+          _ => error(
+            EvaluationErrorKind::InvalidType(
+              parameters[0].as_ref().to_string(),
+              vec![String::from("String"), String::from("Array")],
+            ),
+            span,
+          ),
         },
       },
       constant: true,
@@ -142,7 +158,7 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 2,
-        function: |parameters| match &parameters[0] {
+        function: |span, parameters| match &parameters[0] {
           Value::Array(array) => match &parameters[1] {
             Value::String(string) => {
               let mut result = Vec::new();
@@ -154,15 +170,21 @@ pub fn default() -> Scope {
 
               Ok(Value::Array(result))
             }
-            _ => Err(EvaluationError::InvalidType(
-              parameters[1].as_ref().to_string(),
-              vec![String::from("String")],
-            )),
+            _ => error(
+              EvaluationErrorKind::InvalidType(
+                parameters[1].as_ref().to_string(),
+                vec![String::from("String")],
+              ),
+              span,
+            ),
           },
-          _ => Err(EvaluationError::InvalidType(
-            parameters[0].as_ref().to_string(),
-            vec![String::from("Array")],
-          )),
+          _ => error(
+            EvaluationErrorKind::InvalidType(
+              parameters[0].as_ref().to_string(),
+              vec![String::from("Array")],
+            ),
+            span,
+          ),
         },
       },
       constant: true,

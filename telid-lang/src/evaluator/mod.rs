@@ -1,5 +1,6 @@
 mod evaluator;
 pub mod scope;
+mod util;
 pub mod value;
 
 #[cfg(test)]

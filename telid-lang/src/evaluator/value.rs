@@ -1,4 +1,5 @@
 use crate::{error::EvaluationError, parser::ast::Statement};
+use std::ops::Range;
 use strum_macros::AsRefStr;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -20,7 +21,7 @@ pub enum Value {
   },
   RustFunction {
     parameter_count: usize,
-    function: fn(Vec<Value>) -> Result<Value, EvaluationError>,
+    function: fn(Range<usize>, Vec<Value>) -> Result<Value, EvaluationError>,
   },
 }
 

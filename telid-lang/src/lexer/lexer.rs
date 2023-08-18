@@ -1,6 +1,6 @@
 use super::tokens::TokenKind;
 use crate::error::LexError;
-use std::{iter::Peekable, str::Chars, ops::Range};
+use std::{iter::Peekable, ops::Range, str::Chars};
 
 pub struct Lexer<'a> {
   source: &'a str,

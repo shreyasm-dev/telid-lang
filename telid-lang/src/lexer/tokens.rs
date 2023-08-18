@@ -1,4 +1,7 @@
-use crate::{error::LexError, parser::ast::{BinaryOperator, UnaryOperator}};
+use crate::{
+  error::LexError,
+  parser::ast::{BinaryOperator, UnaryOperator},
+};
 use ordered_float::OrderedFloat;
 use strum_macros::AsRefStr;
 

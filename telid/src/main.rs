@@ -1,6 +1,5 @@
 use ariadne::Source;
 use chumsky::Parser;
-use colored::Colorize;
 use inquire::{
   set_global_render_config,
   ui::{RenderConfig, StyleSheet, Styled},
@@ -113,7 +112,10 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
   match evaluate(ast.unwrap(), scope.clone()) {
     Ok(scope) => Ok(scope),
     Err(error) => {
-      eprintln!("{}", error.to_string().red());
+      error
+        .report(id, error.span.clone(), tokens)
+        .eprint((id, Source::from(source.clone())))
+        .unwrap();
       Err(())
     }
   }

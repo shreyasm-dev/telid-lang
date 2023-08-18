@@ -1,9 +1,10 @@
 use super::{
   scope::Scope,
+  util::error,
   value::{Value, Variable},
 };
 use crate::{
-  error::EvaluationError,
+  error::{EvaluationError, EvaluationErrorKind},
   parser::ast::{
     BinaryOperator, Expression, ExpressionKind, Statement, StatementKind, UnaryOperator,
   },
@@ -24,10 +25,7 @@ fn evaluate_statement(
   statement: Statement,
   mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
-  let Statement {
-    kind,
-    span: _, // TODO: Use span for error reporting
-  } = statement;
+  let Statement { kind, span } = statement;
 
   match kind {
     StatementKind::Block(statements) => {
@@ -47,7 +45,7 @@ fn evaluate_statement(
       match scope.clone().get(&name.0) {
         Some(variable) => {
           if variable.constant {
-            return Err(EvaluationError::ConstantReassignment(name.0));
+            return error(EvaluationErrorKind::ConstantReassignment(name.0), span);
           }
         }
         None => {}
@@ -86,7 +84,7 @@ fn evaluate_statement(
         let value = evaluate_expression(value, &mut scope)?;
 
         if variable.constant {
-          Err(EvaluationError::ConstantReassignment(name.0))
+          error(EvaluationErrorKind::ConstantReassignment(name.0), span)
         } else {
           scope.insert_existing(
             name.0,
@@ -98,7 +96,7 @@ fn evaluate_statement(
           Ok(value)
         }
       }
-      None => Err(EvaluationError::UndefinedVariable(name.0)),
+      None => error(EvaluationErrorKind::UndefinedVariable(name.0), span),
     },
   }
 }
@@ -107,16 +105,13 @@ fn evaluate_expression(
   expression: Expression,
   mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
-  let Expression {
-    kind,
-    span: _, // TODO: Use span for error reporting
-  } = expression;
+  let Expression { kind, span } = expression;
 
   match kind {
     ExpressionKind::Void => Ok(Value::Void),
     ExpressionKind::Identifier(identifier) => match scope.get(&identifier.0) {
       Some(variable) => Ok(variable.value.clone()),
-      None => Err(EvaluationError::UndefinedVariable(identifier.0)),
+      None => error(EvaluationErrorKind::UndefinedVariable(identifier.0), span),
     },
     ExpressionKind::NumberLiteral(number) => Ok(Value::Number(number)),
     ExpressionKind::StringLiteral(string) => Ok(Value::String(string)),
@@ -136,27 +131,36 @@ fn evaluate_expression(
           let index = number as usize;
           match array.get(index) {
             Some(value) => Ok(value.clone()),
-            None => Err(EvaluationError::IndexOutOfBounds(index, array.len())),
+            None => error(
+              EvaluationErrorKind::IndexOutOfBounds(index, array.len()),
+              span,
+            ),
           }
         }
         (Value::String(string), Value::Number(number)) => {
           let index = number as usize;
           match string.chars().nth(index) {
             Some(character) => Ok(Value::String(character.to_string())),
-            None => Err(EvaluationError::IndexOutOfBounds(index, string.len())),
+            None => error(
+              EvaluationErrorKind::IndexOutOfBounds(index, string.len()),
+              span,
+            ),
           }
         }
-        _ => Err(EvaluationError::InvalidType(
-          iterable.as_ref().to_string(),
-          vec!["Array".to_string()],
-        )),
+        _ => error(
+          EvaluationErrorKind::InvalidType(
+            iterable.as_ref().to_string(),
+            vec!["Array".to_string()],
+          ),
+          span,
+        ),
       }
     }
     // name: Identifier, parameters: Vec<ExpressionKind>
     ExpressionKind::FunctionCall { name, arguments } => {
       let function = match scope.get(&name.0) {
         Some(variable) => variable.value.clone(),
-        None => return Err(EvaluationError::UndefinedVariable(name.0)),
+        None => return error(EvaluationErrorKind::UndefinedVariable(name.0), span),
       };
 
       match function {
@@ -165,23 +169,23 @@ fn evaluate_expression(
           function,
         } => {
           if arguments.len() != parameter_count {
-            return Err(EvaluationError::IncorrectParameterCount(
-              arguments.len(),
-              parameter_count,
-            ));
+            return error(
+              EvaluationErrorKind::IncorrectParameterCount(arguments.len(), parameter_count),
+              span,
+            );
           }
           let mut passed_parameters: Vec<Value> = Vec::new();
           for parameter in arguments {
             passed_parameters.push(evaluate_expression(parameter, &mut scope)?);
           }
-          function(passed_parameters)
+          function(span, passed_parameters)
         }
         Value::Function { parameters, body } => {
           if parameters.len() != parameters.len() {
-            return Err(EvaluationError::IncorrectParameterCount(
-              parameters.len(),
-              parameters.len(),
-            ));
+            return error(
+              EvaluationErrorKind::IncorrectParameterCount(parameters.len(), parameters.len()),
+              span,
+            );
           }
           scope.push_scope();
           for (parameter, value) in parameters.iter().zip(arguments) {
@@ -198,10 +202,13 @@ fn evaluate_expression(
           scope.pop_scope();
           result
         }
-        _ => Err(EvaluationError::InvalidType(
-          function.as_ref().to_string(),
-          vec!["Function".to_string()],
-        )),
+        _ => error(
+          EvaluationErrorKind::InvalidType(
+            function.as_ref().to_string(),
+            vec!["Function".to_string()],
+          ),
+          span,
+        ),
       }
     }
     ExpressionKind::Unary { operator, operand } => {
@@ -209,11 +216,14 @@ fn evaluate_expression(
       match (operator.clone(), operand.clone()) {
         (UnaryOperator::Negate, Value::Number(number)) => Ok(Value::Number(-number)),
         (UnaryOperator::Not, Value::Boolean(boolean)) => Ok(Value::Boolean(!boolean)),
-        _ => Err(EvaluationError::InvalidOperator(
-          operator.to_string(),
-          operand.as_ref().to_string(),
-          "".to_string(),
-        )),
+        _ => error(
+          EvaluationErrorKind::InvalidOperator(
+            operator.to_string(),
+            operand.as_ref().to_string(),
+            "".to_string(),
+          ),
+          span,
+        ),
       }
     }
     ExpressionKind::Binary {
@@ -237,18 +247,24 @@ fn evaluate_expression(
                   return Ok(Value::Boolean(right_result));
                 }
                 _ => {
-                  return Err(EvaluationError::InvalidType(
-                    right.as_ref().to_string(),
-                    vec!["Boolean".to_string()],
-                  ))
+                  return error(
+                    EvaluationErrorKind::InvalidType(
+                      right.as_ref().to_string(),
+                      vec!["Boolean".to_string()],
+                    ),
+                    span,
+                  );
                 }
               }
             }
             _ => {
-              return Err(EvaluationError::InvalidType(
-                left.as_ref().to_string(),
-                vec!["Boolean".to_string()],
-              ))
+              return error(
+                EvaluationErrorKind::InvalidType(
+                  left.as_ref().to_string(),
+                  vec!["Boolean".to_string()],
+                ),
+                span,
+              );
             }
           }
         }
@@ -266,18 +282,24 @@ fn evaluate_expression(
                   return Ok(Value::Boolean(right_result));
                 }
                 _ => {
-                  return Err(EvaluationError::InvalidType(
-                    right.as_ref().to_string(),
-                    vec!["Boolean".to_string()],
-                  ))
+                  return error(
+                    EvaluationErrorKind::InvalidType(
+                      right.as_ref().to_string(),
+                      vec!["Boolean".to_string()],
+                    ),
+                    span,
+                  );
                 }
               }
             }
             _ => {
-              return Err(EvaluationError::InvalidType(
-                left.as_ref().to_string(),
-                vec!["Boolean".to_string()],
-              ))
+              return error(
+                EvaluationErrorKind::InvalidType(
+                  left.as_ref().to_string(),
+                  vec!["Boolean".to_string()],
+                ),
+                span,
+              );
             }
           }
         }
@@ -319,7 +341,7 @@ fn evaluate_expression(
             }
             (BinaryOperator::Range, Value::Number(left), Value::Number(right)) => {
               if left > right {
-                return Err(EvaluationError::InvalidRange(left, right));
+                return error(EvaluationErrorKind::InvalidRange(left, right), span);
               }
 
               let mut array = Vec::new();
@@ -352,11 +374,14 @@ fn evaluate_expression(
             }
 
             // unhandled cases
-            (operator, left, right) => Err(EvaluationError::InvalidOperator(
-              operator.to_string(),
-              left.as_ref().to_string(),
-              right.as_ref().to_string(),
-            )),
+            (operator, left, right) => error(
+              EvaluationErrorKind::InvalidOperator(
+                operator.to_string(),
+                left.as_ref().to_string(),
+                right.as_ref().to_string(),
+              ),
+              span,
+            ),
           }
         }
       }
@@ -378,10 +403,13 @@ fn evaluate_expression(
             }
           }
         }
-        _ => Err(EvaluationError::InvalidType(
-          condition.as_ref().to_string(),
-          vec!["Boolean".to_string()],
-        )),
+        _ => error(
+          EvaluationErrorKind::InvalidType(
+            condition.as_ref().to_string(),
+            vec!["Boolean".to_string()],
+          ),
+          span,
+        ),
       }
     }
     ExpressionKind::For {
@@ -423,10 +451,13 @@ fn evaluate_expression(
           }
           Ok(Value::Array(value))
         }
-        _ => Err(EvaluationError::InvalidType(
-          iterable.as_ref().to_string(),
-          vec!["Array".to_string()],
-        )),
+        _ => error(
+          EvaluationErrorKind::InvalidType(
+            iterable.as_ref().to_string(),
+            vec!["Array".to_string()],
+          ),
+          span,
+        ),
       }
     }
     ExpressionKind::While { condition, body } => {
@@ -445,10 +476,13 @@ fn evaluate_expression(
             }
           }
           _ => {
-            return Err(EvaluationError::InvalidType(
-              condition.as_ref().to_string(),
-              vec!["Boolean".to_string()],
-            ))
+            return error(
+              EvaluationErrorKind::InvalidType(
+                condition.as_ref().to_string(),
+                vec!["Boolean".to_string()],
+              ),
+              span,
+            );
           }
         }
       }

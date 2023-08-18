@@ -2,6 +2,8 @@ use ariadne::{Label, Report, ReportKind};
 use std::ops::Range;
 use strum_macros::AsRefStr;
 
+use crate::lexer::tokens::TokenKind;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LexError {
   UnexpectedCharacter(char),
@@ -30,8 +32,14 @@ impl ToString for LexError {
   }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct EvaluationError {
+  pub kind: EvaluationErrorKind,
+  pub span: Range<usize>,
+}
+
 #[derive(Debug, Clone, PartialEq, AsRefStr)]
-pub enum EvaluationError {
+pub enum EvaluationErrorKind {
   UndefinedVariable(String),
   InvalidOperator(String, String, String),
   InvalidType(String, Vec<String>),
@@ -42,31 +50,46 @@ pub enum EvaluationError {
   AssertionFailed,
 }
 
-impl ToString for EvaluationError {
+impl EvaluationError {
+  pub fn report<'a>(
+    &'a self,
+    src: &'a str,
+    span: Range<usize>,
+    tokens: Vec<(TokenKind, Range<usize>)>,
+  ) -> Report<'a, (&str, std::ops::Range<usize>)> {
+    let span = tokens[span.start].1.clone();
+    Report::build(ReportKind::Error, src, span.start)
+      .with_message(self.kind.to_string())
+      .with_label(Label::new((src, span)))
+      .finish()
+  }
+}
+
+impl ToString for EvaluationErrorKind {
   fn to_string(&self) -> String {
     match self {
-      EvaluationError::AssertionFailed => self.as_ref().to_string(),
+      EvaluationErrorKind::AssertionFailed => self.as_ref().to_string(),
       _ => format!(
         "{}: {}",
         self.as_ref(),
         match self {
-          EvaluationError::UndefinedVariable(identifier) => identifier.to_string(),
-          EvaluationError::InvalidOperator(operator, left, right) => format!(
+          EvaluationErrorKind::UndefinedVariable(identifier) => identifier.to_string(),
+          EvaluationErrorKind::InvalidOperator(operator, left, right) => format!(
             "{:?} {:?} {:?}",
             left,
             operator,
             right, // Do we want to use prefix notation here like in the rest of the language?
           ),
-          EvaluationError::InvalidType(found, expected) =>
+          EvaluationErrorKind::InvalidType(found, expected) =>
             format!("found {:?}, expected one of {:?}", found, expected),
-          EvaluationError::IndexOutOfBounds(index, length) => format!(
+          EvaluationErrorKind::IndexOutOfBounds(index, length) => format!(
             "index {:?} is not within the range [0..{:?})",
             index, length
           ),
-          EvaluationError::IncorrectParameterCount(found, expected) =>
+          EvaluationErrorKind::IncorrectParameterCount(found, expected) =>
             format!("expected {}, found {}", expected, found),
-          EvaluationError::ConstantReassignment(identifier) => identifier.to_string(),
-          EvaluationError::InvalidRange(start, end) => format!("{}..{}", start, end),
+          EvaluationErrorKind::ConstantReassignment(identifier) => identifier.to_string(),
+          EvaluationErrorKind::InvalidRange(start, end) => format!("{}..{}", start, end),
           _ => unreachable!(),
         }
       ),
