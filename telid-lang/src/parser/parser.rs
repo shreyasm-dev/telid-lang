@@ -115,23 +115,16 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
           just(TokenKind::If)
             .ignore_then(expression.clone())
             .then(statement.clone())
-            .then_ignore(just(TokenKind::Else))
-            .then(statement.clone())
+            .then(
+              just(TokenKind::Else)
+                .ignore_then(statement.clone())
+                .or_not(),
+            )
             .map(|((condition, consequence), alternative)| Expression::If {
               condition: Box::new(condition),
               consequence: Box::new(consequence),
-              alternative: Box::new(Some(alternative)),
-            })
-            .or(
-              just(TokenKind::If)
-                .ignore_then(expression.clone())
-                .then(statement.clone())
-                .map(|(condition, consequence)| Expression::If {
-                  condition: Box::new(condition),
-                  consequence: Box::new(consequence),
-                  alternative: Box::new(None),
-                }),
-            ),
+              alternative: Box::new(alternative),
+            }),
         )
         .or(
           // For loop
