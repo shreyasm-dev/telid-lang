@@ -1,6 +1,6 @@
 use crate::{
   lexer::Lexer,
-  parser::ast::{BinaryOperator, Statement},
+  parser::ast::{BinaryOperator, StatementKind},
   parser::{
     ast::{Expression, UnaryOperator},
     parser,
@@ -20,7 +20,7 @@ fn test_operators() {
 
   assert_eq!(
     ast,
-    Ok(vec![Statement::Expression(Expression::Unary {
+    Ok(vec![StatementKind::Expression(Expression::Unary {
       operator: UnaryOperator::Negate,
       operand: Box::new(Expression::Binary {
         left: Box::new(Expression::NumberLiteral(5.0)),
@@ -40,7 +40,7 @@ fn test_operators() {
 
   assert_eq!(
     ast,
-    Ok(vec![Statement::Expression(Expression::Binary {
+    Ok(vec![StatementKind::Expression(Expression::Binary {
       left: Box::new(Expression::Unary {
         operator: UnaryOperator::Negate,
         operand: Box::new(Expression::NumberLiteral(5.0)),

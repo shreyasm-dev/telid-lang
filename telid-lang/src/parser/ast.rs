@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum Statement {
-  Block(Vec<Statement>),
-  LetStatement {
+pub enum StatementKind {
+  Block(Vec<StatementKind>),
+  Let {
     name: Identifier,
     value: Expression,
     constant: bool,
@@ -10,7 +10,7 @@ pub enum Statement {
   FunctionDeclaration {
     name: Identifier,
     parameters: Vec<Identifier>,
-    body: Box<Statement>,
+    body: Box<StatementKind>,
   },
   Assignment {
     name: Identifier,
@@ -36,17 +36,17 @@ pub enum Expression {
   },
   If {
     condition: Box<Expression>,
-    consequence: Box<Statement>,
-    alternative: Box<Option<Statement>>,
+    consequence: Box<StatementKind>,
+    alternative: Box<Option<StatementKind>>,
   },
   For {
     variable: Identifier,
     iterable: Box<Expression>,
-    body: Box<Statement>,
+    body: Box<StatementKind>,
   },
   While {
     condition: Box<Expression>,
-    body: Box<Statement>,
+    body: Box<StatementKind>,
   },
   Binary {
     operator: BinaryOperator,

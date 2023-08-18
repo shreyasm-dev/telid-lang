@@ -4,11 +4,11 @@ use super::{
 };
 use crate::{
   error::EvaluationError,
-  parser::ast::{BinaryOperator, Expression, Statement, UnaryOperator},
+  parser::ast::{BinaryOperator, Expression, StatementKind, UnaryOperator},
 };
 
 pub fn evaluate(
-  program: Vec<Statement>,
+  program: Vec<StatementKind>,
   mut scope: Scope,
 ) -> Result<(Value, Scope), EvaluationError> {
   let mut value = Value::Void;
@@ -19,11 +19,11 @@ pub fn evaluate(
 }
 
 fn evaluate_statement(
-  statement: Statement,
+  statement: StatementKind,
   mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
   match statement {
-    Statement::Block(statements) => {
+    StatementKind::Block(statements) => {
       scope.push_scope();
       let mut value = Value::Void;
       for statement in statements {
@@ -32,7 +32,7 @@ fn evaluate_statement(
       scope.pop_scope();
       Ok(value)
     }
-    Statement::LetStatement {
+    StatementKind::Let {
       name,
       value,
       constant,
@@ -56,8 +56,8 @@ fn evaluate_statement(
       );
       Ok(value)
     }
-    Statement::Expression(expression) => evaluate_expression(expression, &mut scope),
-    Statement::FunctionDeclaration {
+    StatementKind::Expression(expression) => evaluate_expression(expression, &mut scope),
+    StatementKind::FunctionDeclaration {
       name,
       parameters,
       body,
@@ -74,7 +74,7 @@ fn evaluate_statement(
       );
       Ok(Value::Void)
     }
-    Statement::Assignment { name, value } => match scope.clone().get(&name.0) {
+    StatementKind::Assignment { name, value } => match scope.clone().get(&name.0) {
       Some(variable) => {
         let value = evaluate_expression(value, &mut scope)?;
 
