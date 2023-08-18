@@ -23,14 +23,14 @@ impl<'a> Lexer<'a> {
     let mut chars = chars.chars().peekable();
 
     while let Some(c) = chars.next() {
-      let token = self.lex_token(&mut chars, c);
-      match token.kind {
+      let kind = self.lex_token(&mut chars, c);
+      match kind {
         TokenKind::Whitespace | TokenKind::Newline | TokenKind::Comment => {
           if emit_ignored {
-            tokens.push(token);
+            tokens.push(self.token(kind));
           }
         }
-        _ => tokens.push(token),
+        _ => tokens.push(self.token(kind)),
       }
     }
 
@@ -39,7 +39,7 @@ impl<'a> Lexer<'a> {
     tokens
   }
 
-  pub fn lex_token(&mut self, chars: &mut Peekable<Chars<'_>>, c: char) -> Token {
+  pub fn lex_token(&mut self, chars: &mut Peekable<Chars<'_>>, c: char) -> TokenKind {
     self.start = self.current;
     self.current += 1;
 
@@ -54,9 +54,9 @@ impl<'a> Lexer<'a> {
           self.current += 1;
         }
 
-        self.token(TokenKind::Whitespace)
+        TokenKind::Whitespace
       }
-      '\n' => self.token(TokenKind::Newline), // TODO: Handle carriage returns
+      '\n' => TokenKind::Newline, // TODO: Handle carriage returns
 
       '0'..='9' => {
         let mut literal = c.to_string();
@@ -79,7 +79,7 @@ impl<'a> Lexer<'a> {
           self.current += 1;
         }
 
-        self.token(TokenKind::NumberLiteral(literal.parse().unwrap()))
+        TokenKind::NumberLiteral(literal.parse().unwrap())
       }
 
       '"' | '\'' => {
@@ -117,9 +117,9 @@ impl<'a> Lexer<'a> {
         }
 
         if unterminated {
-          self.error(LexError::UnterminatedStringLiteral)
+          TokenKind::Error(LexError::UnterminatedStringLiteral)
         } else {
-          self.token(TokenKind::StringLiteral(literal))
+          TokenKind::StringLiteral(literal)
         }
       }
 
@@ -135,12 +135,12 @@ impl<'a> Lexer<'a> {
           self.current += 1;
         }
 
-        self.token(TokenKind::from_identifier(literal))
+        TokenKind::from_identifier(literal)
       }
 
-      '+' => self.token(TokenKind::Plus),
-      '-' => self.token(TokenKind::Minus),
-      '*' => self.token(TokenKind::Asterisk),
+      '+' => TokenKind::Plus,
+      '-' => TokenKind::Minus,
+      '*' => TokenKind::Asterisk,
       '/' => {
         if let Some('/') = chars.peek() {
           chars.next();
@@ -154,7 +154,7 @@ impl<'a> Lexer<'a> {
             }
           }
 
-          self.token(TokenKind::Comment)
+          TokenKind::Comment
         } else if let Some('*') = chars.peek() {
           chars.next();
           self.current += 1;
@@ -171,101 +171,94 @@ impl<'a> Lexer<'a> {
             }
           }
 
-          self.token(TokenKind::Comment)
+          TokenKind::Comment
         } else {
-          self.token(TokenKind::Slash)
+          TokenKind::Slash
         }
       }
-      '%' => self.token(TokenKind::Percent),
-      '^' => self.token(TokenKind::Caret),
+      '%' => TokenKind::Percent,
+      '^' => TokenKind::Caret,
       '&' => {
         if let Some('&') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::AmpersandAmpersand)
+          TokenKind::AmpersandAmpersand
         } else {
-          self.token(TokenKind::Ampersand)
+          TokenKind::Ampersand
         }
       }
       '|' => {
         if let Some('|') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::PipePipe)
+          TokenKind::PipePipe
         } else {
-          self.token(TokenKind::Pipe)
+          TokenKind::Pipe
         }
       }
       '=' => {
         if let Some('=') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::EqualsEquals)
+          TokenKind::EqualsEquals
         } else {
-          self.token(TokenKind::Equals)
+          TokenKind::Equals
         }
       }
       '!' => {
         if let Some('=') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::BangEquals)
+          TokenKind::BangEquals
         } else {
-          self.token(TokenKind::Bang)
+          TokenKind::Bang
         }
       }
       '<' => {
         if let Some('=') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::LessThanEquals)
+          TokenKind::LessThanEquals
         } else {
-          self.token(TokenKind::LessThan)
+          TokenKind::LessThan
         }
       }
       '>' => {
         if let Some('=') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::GreaterThanEquals)
+          TokenKind::GreaterThanEquals
         } else {
-          self.token(TokenKind::GreaterThan)
+          TokenKind::GreaterThan
         }
       }
 
-      '(' => self.token(TokenKind::LeftParen),
-      ')' => self.token(TokenKind::RightParen),
-      '[' => self.token(TokenKind::LeftBracket),
-      ']' => self.token(TokenKind::RightBracket),
-      '{' => self.token(TokenKind::LeftBrace),
-      '}' => self.token(TokenKind::RightBrace),
+      '(' => TokenKind::LeftParen,
+      ')' => TokenKind::RightParen,
+      '[' => TokenKind::LeftBracket,
+      ']' => TokenKind::RightBracket,
+      '{' => TokenKind::LeftBrace,
+      '}' => TokenKind::RightBrace,
 
-      ',' => self.token(TokenKind::Comma),
+      ',' => TokenKind::Comma,
       '.' => {
         if let Some('.') = chars.peek() {
           chars.next();
           self.current += 1;
-          self.token(TokenKind::DotDot)
+          TokenKind::DotDot
         } else {
-          self.token(TokenKind::Dot)
+          TokenKind::Dot
         }
       }
-      ';' => self.token(TokenKind::Semicolon),
+      ';' => TokenKind::Semicolon,
 
-      _ => self.error(LexError::UnexpectedCharacter(c)),
+      _ => TokenKind::Error(LexError::UnexpectedCharacter(c)),
     }
   }
 
   pub fn token(&self, token: TokenKind) -> Token {
     Token {
       kind: token,
-      span: self.start..self.current,
-    }
-  }
-
-  pub fn error(&self, message: LexError) -> Token {
-    Token {
-      kind: TokenKind::Error(message),
       span: self.start..self.current,
     }
   }
