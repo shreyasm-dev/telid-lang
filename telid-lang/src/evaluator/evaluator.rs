@@ -42,15 +42,6 @@ fn evaluate_statement(
       value,
       constant,
     } => {
-      match scope.clone().get(&name.0) {
-        Some(variable) => {
-          if variable.constant {
-            return error(EvaluationErrorKind::ConstantReassignment(name.0), span);
-          }
-        }
-        None => {}
-      }
-
       let value = evaluate_expression(value, &mut scope)?;
       scope.insert(
         name.0,
