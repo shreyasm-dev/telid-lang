@@ -156,7 +156,86 @@ fn evaluate_expression(
         ),
       }
     }
-    // name: Identifier, parameters: Vec<ExpressionKind>
+    ExpressionKind::Slice {
+      iterable,
+      start,
+      end,
+    } => {
+      let iterable = evaluate_expression(*iterable, &mut scope)?;
+      let array = match iterable.clone() {
+        Value::Array(array) => array,
+        Value::String(string) => string
+          .chars()
+          .map(|c| Value::String(c.to_string()))
+          .collect(), // TODO: More efficient way to do this?
+        _ => {
+          return error(
+            EvaluationErrorKind::InvalidType(
+              iterable.as_ref().to_string(),
+              vec!["Array".to_string(), "String".to_string()],
+            ),
+            span,
+          );
+        }
+      };
+
+      let start = match *start {
+        Some(start) => match evaluate_expression(start, &mut scope)? {
+          Value::Number(number) => number as usize,
+          x => {
+            return error(
+              EvaluationErrorKind::InvalidType(x.as_ref().to_string(), vec!["Number".to_string()]),
+              span,
+            );
+          }
+        },
+        None => 0,
+      };
+
+      let end = match *end {
+        Some(end) => match evaluate_expression(end, &mut scope)? {
+          Value::Number(number) => number as usize,
+          x => {
+            return error(
+              EvaluationErrorKind::InvalidType(x.as_ref().to_string(), vec!["Number".to_string()]),
+              span,
+            );
+          }
+        },
+        None => array.len(),
+      };
+
+      if start > end {
+        return error(
+          EvaluationErrorKind::InvalidRange(start as f64, end as f64),
+          span,
+        );
+      }
+
+      if end > array.len() {
+        return error(
+          EvaluationErrorKind::IndexOutOfBounds(end, array.len()),
+          span,
+        );
+      }
+
+      let mut result = Vec::new();
+      for i in start..end {
+        result.push(array[i].clone());
+      }
+
+      match iterable {
+        Value::Array(_) => Ok(Value::Array(result)),
+        Value::String(_) => Ok(Value::String(
+          result
+            .iter()
+            .map(|value| value.to_string())
+            .collect::<Vec<_>>()
+            .join(""),
+        )),
+        _ => unreachable!(),
+      }
+    }
     ExpressionKind::FunctionCall { name, arguments } => {
       let function = match scope.get(&name.0) {
         Some(variable) => variable.value.clone(),

@@ -44,6 +44,11 @@ pub enum ExpressionKind {
     iterable: Box<Expression>,
     index: Box<Expression>,
   },
+  Slice {
+    iterable: Box<Expression>,
+    start: Box<Option<Expression>>,
+    end: Box<Option<Expression>>,
+  },
   FunctionCall {
     name: Identifier,
     arguments: Vec<Expression>,

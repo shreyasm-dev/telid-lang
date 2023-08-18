@@ -94,6 +94,23 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             }),
         )
         .or(
+          // Slice
+          just(TokenKind::LeftBracket)
+            .ignore_then(expression.clone().or_not())
+            .then_ignore(just(TokenKind::DotDot))
+            .then(expression.clone().or_not())
+            .then_ignore(just(TokenKind::RightBracket))
+            .then(expression.clone())
+            .map_with_span(|((start, end), iterable), span| Expression {
+              kind: ExpressionKind::Slice {
+                start: Box::new(start),
+                end: Box::new(end),
+                iterable: Box::new(iterable),
+              },
+              span,
+            }),
+        )
+        .or(
           delimited_list!(
             // Array literal
             expression,
