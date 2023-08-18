@@ -32,7 +32,7 @@ println(factorial(5)); // 120
 let y = [1, 2, 3]; // this is an array literal
 
 for i in y {
-  println(+ + i ' - ' [i]y); // Index access is a prefix operator
+  println(+ + i ' - ' [- i 1]y); // Index access is a prefix operator
 }
 
 let counter = 0;
