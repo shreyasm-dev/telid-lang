@@ -21,7 +21,7 @@ let fn read_number = {
 let num1 = read_number();
 let num2 = read_number();
 
-println('Result:');
+print('Result: ');
 
 if == operator '+'
   println(+ num1 num2);
