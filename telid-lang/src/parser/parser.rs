@@ -1,4 +1,4 @@
-use super::ast::{Expression, Identifier, UnaryOperator, StatementKind};
+use super::ast::{Expression, Identifier, Statement, StatementKind, UnaryOperator};
 use crate::lexer::tokens::TokenKind;
 use chumsky::{
   prelude::Simple,
@@ -16,7 +16,7 @@ macro_rules! delimited_list {
   };
 }
 
-pub fn parser() -> impl Parser<TokenKind, Vec<StatementKind>, Error = Simple<TokenKind>> {
+pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKind>> {
   // For when we don't want to wrap the identifier in an expression
   let identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
   let literal = select! {
@@ -155,13 +155,19 @@ pub fn parser() -> impl Parser<TokenKind, Vec<StatementKind>, Error = Simple<Tok
       .clone()
       .repeated()
       .delimited_by(just(TokenKind::LeftBrace), just(TokenKind::RightBrace))
-      .map(StatementKind::Block)
+      .map_with_span(|statements, span| Statement {
+        kind: StatementKind::Block(statements),
+        span,
+      })
       .or(
         // Assignment
         identifier
           .then_ignore(just(TokenKind::Equals))
           .then(expression.clone())
-          .map(|(name, value)| StatementKind::Assignment { name, value }),
+          .map_with_span(|(name, value), span| Statement {
+            kind: StatementKind::Assignment { name, value },
+            span,
+          }),
       )
       .or(
         // Let declaration
@@ -169,10 +175,13 @@ pub fn parser() -> impl Parser<TokenKind, Vec<StatementKind>, Error = Simple<Tok
           .ignore_then(identifier)
           .then_ignore(just(TokenKind::Equals))
           .then(expression.clone())
-          .map(|(name, value)| StatementKind::Let {
-            name,
-            value,
-            constant: false,
+          .map_with_span(|(name, value), span| Statement {
+            kind: StatementKind::Let {
+              name,
+              value,
+              constant: false,
+            },
+            span,
           }),
       )
       .or(
@@ -182,10 +191,13 @@ pub fn parser() -> impl Parser<TokenKind, Vec<StatementKind>, Error = Simple<Tok
           .ignore_then(identifier)
           .then_ignore(just(TokenKind::Equals))
           .then(expression.clone())
-          .map(|(name, value)| StatementKind::Let {
-            name,
-            value,
-            constant: true,
+          .map_with_span(|(name, value), span| Statement {
+            kind: StatementKind::Let {
+              name,
+              value,
+              constant: true,
+            },
+            span,
           }),
       )
       .or(
@@ -196,17 +208,21 @@ pub fn parser() -> impl Parser<TokenKind, Vec<StatementKind>, Error = Simple<Tok
           .then(identifier.repeated())
           .then_ignore(just(TokenKind::Equals))
           .then(statement.clone())
-          .map(
-            |((name, parameters), body)| StatementKind::FunctionDeclaration {
+          .map_with_span(|((name, parameters), body), span| Statement {
+            kind: StatementKind::FunctionDeclaration {
               name,
               parameters,
               body: Box::new(body),
             },
-          ),
+            span,
+          }),
       )
       .or(
         // Expression statement
-        expression.map(StatementKind::Expression),
+        expression.map_with_span(|expression, span| Statement {
+          kind: StatementKind::Expression(expression),
+          span,
+        }),
       )
       .then_ignore(just(TokenKind::Semicolon).or_not())
   });

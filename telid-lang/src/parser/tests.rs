@@ -1,6 +1,6 @@
 use crate::{
   lexer::Lexer,
-  parser::ast::{BinaryOperator, StatementKind},
+  parser::ast::{BinaryOperator, Statement, StatementKind},
   parser::{
     ast::{Expression, UnaryOperator},
     parser,
@@ -20,14 +20,17 @@ fn test_operators() {
 
   assert_eq!(
     ast,
-    Ok(vec![StatementKind::Expression(Expression::Unary {
-      operator: UnaryOperator::Negate,
-      operand: Box::new(Expression::Binary {
-        left: Box::new(Expression::NumberLiteral(5.0)),
-        operator: BinaryOperator::Subtract,
-        right: Box::new(Expression::NumberLiteral(6.0)),
+    Ok(vec![Statement {
+      kind: StatementKind::Expression(Expression::Unary {
+        operator: UnaryOperator::Negate,
+        operand: Box::new(Expression::Binary {
+          left: Box::new(Expression::NumberLiteral(5.0)),
+          operator: BinaryOperator::Subtract,
+          right: Box::new(Expression::NumberLiteral(6.0)),
+        }),
       }),
-    })])
+      span: 0..4,
+    }])
   );
 
   let source = "- (-5) 6";
@@ -40,13 +43,16 @@ fn test_operators() {
 
   assert_eq!(
     ast,
-    Ok(vec![StatementKind::Expression(Expression::Binary {
-      left: Box::new(Expression::Unary {
-        operator: UnaryOperator::Negate,
-        operand: Box::new(Expression::NumberLiteral(5.0)),
+    Ok(vec![Statement {
+      kind: StatementKind::Expression(Expression::Binary {
+        left: Box::new(Expression::Unary {
+          operator: UnaryOperator::Negate,
+          operand: Box::new(Expression::NumberLiteral(5.0)),
+        }),
+        operator: BinaryOperator::Subtract,
+        right: Box::new(Expression::NumberLiteral(6.0)),
       }),
-      operator: BinaryOperator::Subtract,
-      right: Box::new(Expression::NumberLiteral(6.0)),
-    })])
+      span: 0..6,
+    }])
   );
 }

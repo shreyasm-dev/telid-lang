@@ -1,6 +1,14 @@
+use std::ops::Range;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Statement {
+  pub kind: StatementKind,
+  pub span: Range<usize>,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum StatementKind {
-  Block(Vec<StatementKind>),
+  Block(Vec<Statement>),
   Let {
     name: Identifier,
     value: Expression,
@@ -10,7 +18,7 @@ pub enum StatementKind {
   FunctionDeclaration {
     name: Identifier,
     parameters: Vec<Identifier>,
-    body: Box<StatementKind>,
+    body: Box<Statement>,
   },
   Assignment {
     name: Identifier,
@@ -36,17 +44,17 @@ pub enum Expression {
   },
   If {
     condition: Box<Expression>,
-    consequence: Box<StatementKind>,
-    alternative: Box<Option<StatementKind>>,
+    consequence: Box<Statement>,
+    alternative: Box<Option<Statement>>,
   },
   For {
     variable: Identifier,
     iterable: Box<Expression>,
-    body: Box<StatementKind>,
+    body: Box<Statement>,
   },
   While {
     condition: Box<Expression>,
-    body: Box<StatementKind>,
+    body: Box<Statement>,
   },
   Binary {
     operator: BinaryOperator,

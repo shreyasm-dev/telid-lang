@@ -4,11 +4,11 @@ use super::{
 };
 use crate::{
   error::EvaluationError,
-  parser::ast::{BinaryOperator, Expression, StatementKind, UnaryOperator},
+  parser::ast::{BinaryOperator, Expression, Statement, StatementKind, UnaryOperator},
 };
 
 pub fn evaluate(
-  program: Vec<StatementKind>,
+  program: Vec<Statement>,
   mut scope: Scope,
 ) -> Result<(Value, Scope), EvaluationError> {
   let mut value = Value::Void;
@@ -19,10 +19,15 @@ pub fn evaluate(
 }
 
 fn evaluate_statement(
-  statement: StatementKind,
+  statement: Statement,
   mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
-  match statement {
+  let Statement {
+    kind,
+    span: _, // TODO: Use span for error reporting
+  } = statement;
+
+  match kind {
     StatementKind::Block(statements) => {
       scope.push_scope();
       let mut value = Value::Void;

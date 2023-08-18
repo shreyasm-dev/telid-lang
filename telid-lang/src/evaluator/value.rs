@@ -1,4 +1,4 @@
-use crate::{error::EvaluationError, parser::ast::StatementKind};
+use crate::{error::EvaluationError, parser::ast::Statement};
 use strum_macros::AsRefStr;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -16,7 +16,7 @@ pub enum Value {
   Array(Vec<Value>),
   Function {
     parameters: Vec<String>,
-    body: Box<StatementKind>,
+    body: Box<Statement>,
   },
   RustFunction {
     parameter_count: usize,
