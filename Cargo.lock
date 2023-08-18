@@ -347,9 +347,9 @@ checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
 name = "scoped_stack"
-version = "1.1.1"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99d8f189d8698598c950dbe80188d8139515439ed929b7c3d5b62a986a8e9095"
+checksum = "6141066b45297bafc314f1c0c23e91386999a0fea66036cf551d093db38e8708"
 
 [[package]]
 name = "scopeguard"

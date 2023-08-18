@@ -60,7 +60,7 @@ impl ToString for EvaluationError {
           EvaluationError::InvalidType(found, expected) =>
             format!("found {:?}, expected one of {:?}", found, expected),
           EvaluationError::IndexOutOfBounds(index, length) => format!(
-            "index {:?} is not within the range 0..{:?} (inclusive)",
+            "index {:?} is not within the range [0..{:?})",
             index, length
           ),
           EvaluationError::IncorrectParameterCount(found, expected) =>
