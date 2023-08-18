@@ -78,3 +78,4 @@ Look at `examples/` for more examples
 - `assert(c)`: Asserts that `c` is true
 - `parse(s)`: Parses `s` as a number and returns void if it fails
 - `type(v)`: Returns the type of `v`
+- `len(v)`: Returns the length of `v`

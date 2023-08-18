@@ -119,5 +119,23 @@ pub fn default() -> Scope {
     },
   );
 
+  scope.insert(
+    String::from("len"),
+    Variable {
+      value: Value::RustFunction {
+        parameter_count: 1,
+        function: |parameters| match &parameters[0] {
+          Value::String(string) => Ok(Value::Number(string.len() as f64)),
+          Value::Array(array) => Ok(Value::Number(array.len() as f64)),
+          _ => Err(EvaluationError::InvalidType(
+            parameters[0].as_ref().to_string(),
+            vec![String::from("String"), String::from("Array")],
+          )),
+        },
+      },
+      constant: true,
+    },
+  );
+
   scope
 }
