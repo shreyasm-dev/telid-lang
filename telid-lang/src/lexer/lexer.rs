@@ -1,6 +1,6 @@
-use super::tokens::{Token, TokenKind};
+use super::tokens::TokenKind;
 use crate::error::LexError;
-use std::{iter::Peekable, str::Chars};
+use std::{iter::Peekable, str::Chars, ops::Range};
 
 pub struct Lexer<'a> {
   source: &'a str,
@@ -17,7 +17,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  pub fn lex(&mut self, emit_ignored: bool) -> Vec<Token> {
+  pub fn lex(&mut self, emit_ignored: bool) -> Vec<(TokenKind, Range<usize>)> {
     let mut tokens = Vec::new();
     let chars = self.source.clone();
     let mut chars = chars.chars().peekable();
@@ -256,11 +256,8 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  pub fn token(&self, token: TokenKind) -> Token {
-    Token {
-      kind: token,
-      span: self.start..self.current,
-    }
+  pub fn token(&self, kind: TokenKind) -> (TokenKind, Range<usize>) {
+    (kind, self.start..self.current)
   }
 
   pub fn is_at_end(&self) -> bool {

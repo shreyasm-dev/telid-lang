@@ -1,7 +1,7 @@
-use telid_lang::lexer::tokens::{Token, TokenKind};
 use ariadne::{Label, Report, ReportKind};
 use chumsky::{error::SimpleReason, prelude::Simple};
 use std::ops::Range;
+use telid_lang::lexer::tokens::TokenKind;
 
 pub fn simple_error_to_string(error: Simple<TokenKind>) -> String {
   match error.reason() {
@@ -28,17 +28,17 @@ pub fn simple_error_to_string(error: Simple<TokenKind>) -> String {
 pub fn simple_error_to_report<'a>(
   error: Simple<TokenKind>,
   id: &'a str,
-  tokens: Vec<Token>,
+  tokens: Vec<(TokenKind, Range<usize>)>,
 ) -> Report<'a, (&'a str, Range<usize>)> {
   Report::build(
     ReportKind::Error,
     id,
-    tokens.get(error.span().start).unwrap().span.start,
+    tokens.get(error.span().start).unwrap().1.start,
   )
   .with_message(simple_error_to_string(error.clone()))
   .with_label(Label::new((
     id,
-    tokens.get(error.span().start).unwrap().span.clone(),
+    tokens.get(error.span().start).unwrap().1.clone(),
   )))
   .finish()
 }

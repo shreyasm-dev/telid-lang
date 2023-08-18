@@ -1,6 +1,5 @@
 use crate::{error::LexError, parser::ast::BinaryOperator};
 use ordered_float::OrderedFloat;
-use std::ops::Range;
 use strum_macros::AsRefStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, AsRefStr)]
@@ -59,12 +58,6 @@ pub enum TokenKind {
 
   Error(LexError),
   Eof,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Token {
-  pub kind: TokenKind,
-  pub span: Range<usize>,
 }
 
 impl TokenKind {

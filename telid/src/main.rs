@@ -78,10 +78,10 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
   let tokens = lexer.lex(false);
 
   for token in tokens.clone() {
-    match token.kind {
+    match token.0 {
       TokenKind::Error(error) => {
         error
-          .report(id, token.span)
+          .report(id, token.1)
           .eprint((id, Source::from(source.clone())))
           .unwrap();
 
@@ -96,7 +96,7 @@ fn run(source: &str, id: &str, scope: Scope) -> Result<(Value, Scope), ()> {
     tokens
       .clone()
       .into_iter()
-      .map(|token| token.kind)
+      .map(|token| token.0)
       .collect::<Vec<_>>(),
   );
 

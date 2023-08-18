@@ -15,7 +15,7 @@ fn test_expression() {
 
   let mut lexer = Lexer::new(source);
   let tokens = lexer.lex(false);
-  let tokens = tokens.iter().map(|t| t.kind.clone()).collect::<Vec<_>>();
+  let tokens = tokens.iter().map(|t| t.0.clone()).collect::<Vec<_>>();
 
   let ast = parser().parse(tokens);
   let ast = ast.unwrap();
