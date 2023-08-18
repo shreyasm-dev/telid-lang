@@ -85,10 +85,10 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             .ignore_then(expression.clone())
             .then_ignore(just(TokenKind::RightBracket))
             .then(expression.clone())
-            .map_with_span(|(iterable, index), span| Expression {
+            .map_with_span(|(index, iterable), span| Expression {
               kind: ExpressionKind::Index {
-                iterable: Box::new(iterable),
                 index: Box::new(index),
+                iterable: Box::new(iterable),
               },
               span,
             }),
