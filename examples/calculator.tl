@@ -1,7 +1,7 @@
-print('Enter an operator (+, -, *, /): ');
+print('Enter an operator (+, -, *, /, %): ');
 let operator = readln();
 
-while !(|| || || (== operator '+') (== operator '-') (== operator '*') (== operator '/')) {
+while !(|| || || || (== operator '+') (== operator '-') (== operator '*') (== operator '/') (== operator '%')) {
   println('Invalid operator!');
   print('Enter an operator (+, -, *, /): ');
   operator = readln();
@@ -31,3 +31,5 @@ else if == operator '*'
   println(* num1 num2);
 else if == operator '/'
   println(/ num1 num2);
+else if == operator '%'
+  println(% num1 num2);
