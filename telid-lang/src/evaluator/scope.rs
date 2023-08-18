@@ -137,5 +137,37 @@ pub fn default() -> Scope {
     },
   );
 
+  scope.insert(
+    String::from("filter"),
+    Variable {
+      value: Value::RustFunction {
+        parameter_count: 2,
+        function: |parameters| match &parameters[0] {
+          Value::Array(array) => match &parameters[1] {
+            Value::String(string) => {
+              let mut result = Vec::new();
+              for element in array {
+                if element.as_ref() != string {
+                  result.push(element.clone());
+                }
+              }
+
+              Ok(Value::Array(result))
+            }
+            _ => Err(EvaluationError::InvalidType(
+              parameters[1].as_ref().to_string(),
+              vec![String::from("String")],
+            )),
+          },
+          _ => Err(EvaluationError::InvalidType(
+            parameters[0].as_ref().to_string(),
+            vec![String::from("Array")],
+          )),
+        },
+      },
+      constant: true,
+    },
+  );
+
   scope
 }
