@@ -206,7 +206,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
       )
       .or(
         // Expression statement
-        expression.map(Statement::ExpressionStatement),
+        expression.map(Statement::Expression),
       )
       .then_ignore(just(TokenKind::Semicolon).or_not())
   });

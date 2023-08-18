@@ -6,7 +6,7 @@ pub enum Statement {
     value: Expression,
     constant: bool,
   },
-  ExpressionStatement(Expression),
+  Expression(Expression),
   FunctionDeclaration {
     name: Identifier,
     parameters: Vec<Identifier>,

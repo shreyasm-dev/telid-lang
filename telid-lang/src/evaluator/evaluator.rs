@@ -56,7 +56,7 @@ fn evaluate_statement(
       );
       Ok(value)
     }
-    Statement::ExpressionStatement(expression) => evaluate_expression(expression, &mut scope),
+    Statement::Expression(expression) => evaluate_expression(expression, &mut scope),
     Statement::FunctionDeclaration {
       name,
       parameters,

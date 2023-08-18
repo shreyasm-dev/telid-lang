@@ -20,7 +20,7 @@ fn test_operators() {
 
   assert_eq!(
     ast,
-    Ok(vec![Statement::ExpressionStatement(Expression::Unary {
+    Ok(vec![Statement::Expression(Expression::Unary {
       operator: UnaryOperator::Negate,
       operand: Box::new(Expression::Binary {
         left: Box::new(Expression::NumberLiteral(5.0)),
@@ -40,7 +40,7 @@ fn test_operators() {
 
   assert_eq!(
     ast,
-    Ok(vec![Statement::ExpressionStatement(Expression::Binary {
+    Ok(vec![Statement::Expression(Expression::Binary {
       left: Box::new(Expression::Unary {
         operator: UnaryOperator::Negate,
         operand: Box::new(Expression::NumberLiteral(5.0)),
