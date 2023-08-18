@@ -7,23 +7,21 @@ while !(|| || || (== operator '+') (== operator '-') (== operator '*') (== opera
   operator = readln();
 }
 
-print('Enter a number: ');
-let num1 = parse(readln());
-while == num1 void {
-  println('Invalid number!');
+let fn read_number = {
   print('Enter a number: ');
-  num1 = parse(readln());
+  let num = parse(readln());
+  while == num void {
+    println('Invalid number!');
+    print('Enter a number: ');
+    num = parse(readln());
+  }
+  num;
 }
 
-print('Enter a number: ');
-let num2 = parse(readln());
-while == num2 void {
-  println('Invalid number!');
-  print('Enter a number: ');
-  num2 = parse(readln());
-}
+let num1 = read_number();
+let num2 = read_number();
 
-print('Result: ');
+println('Result:');
 
 if == operator '+'
   println(+ num1 num2);
