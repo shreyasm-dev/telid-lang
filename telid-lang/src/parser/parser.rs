@@ -1,4 +1,4 @@
-use super::ast::{Expression, Identifier, Statement, StatementKind, UnaryOperator};
+use super::ast::{Expression, ExpressionKind, Identifier, Statement, StatementKind};
 use crate::lexer::tokens::TokenKind;
 use chumsky::{
   prelude::Simple,
@@ -20,12 +20,13 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
   // For when we don't want to wrap the identifier in an expression
   let identifier = select! { TokenKind::Identifier(identifier) => Identifier(identifier) };
   let literal = select! {
-    TokenKind::Void => Expression::Void,
-    TokenKind::Identifier(identifier) => Expression::Identifier(Identifier(identifier)),
-    TokenKind::NumberLiteral(number) => Expression::NumberLiteral(*number),
-    TokenKind::StringLiteral(string) => Expression::StringLiteral(string),
-    TokenKind::BooleanLiteral(boolean) => Expression::BooleanLiteral(boolean),
-  };
+    TokenKind::Void => ExpressionKind::Void,
+    TokenKind::Identifier(identifier) => ExpressionKind::Identifier(Identifier(identifier)),
+    TokenKind::NumberLiteral(number) => ExpressionKind::NumberLiteral(*number),
+    TokenKind::StringLiteral(string) => ExpressionKind::StringLiteral(string),
+    TokenKind::BooleanLiteral(boolean) => ExpressionKind::BooleanLiteral(boolean),
+  }
+  .map_with_span(|kind, span| Expression { kind, span });
 
   let statement = recursive(|statement| {
     let expression = recursive(|expression| {
@@ -53,10 +54,13 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
           ))
           .then(expression.clone())
           .then(expression.clone())
-          .map(|((operator, left), right)| Expression::Binary {
-            operator: operator.to_binary_operator(),
-            left: Box::new(left),
-            right: Box::new(right),
+          .map_with_span(|((operator, left), right), span| Expression {
+            kind: ExpressionKind::Binary {
+              operator: operator.to_binary_operator(),
+              left: Box::new(left),
+              right: Box::new(right),
+            },
+            span,
           }),
         )
         .or(
@@ -67,14 +71,12 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             just(TokenKind::Bang),
           ))
           .then(expression.clone())
-          .map(|(operator, operand)| Expression::Unary {
-            operator: match operator {
-              TokenKind::Plus => UnaryOperator::Identity,
-              TokenKind::Minus => UnaryOperator::Negate,
-              TokenKind::Bang => UnaryOperator::Not,
-              _ => unreachable!(),
+          .map_with_span(|(operator, operand), span| Expression {
+            kind: ExpressionKind::Unary {
+              operator: operator.to_unary_operator(),
+              operand: Box::new(operand),
             },
-            operand: Box::new(operand),
+            span,
           }),
         )
         .or(
@@ -83,9 +85,12 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             .ignore_then(expression.clone())
             .then_ignore(just(TokenKind::RightBracket))
             .then(expression.clone())
-            .map(|(index, iterable)| Expression::Index {
-              iterable: Box::new(iterable),
-              index: Box::new(index),
+            .map_with_span(|(iterable, index), span| Expression {
+              kind: ExpressionKind::Index {
+                iterable: Box::new(iterable),
+                index: Box::new(index),
+              },
+              span,
             }),
         )
         .or(
@@ -96,7 +101,10 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             just(TokenKind::LeftBracket),
             just(TokenKind::RightBracket)
           )
-          .map(Expression::ArrayLiteral),
+          .map_with_span(|expressions, span| Expression {
+            kind: ExpressionKind::ArrayLiteral(expressions),
+            span,
+          }),
         )
         .or(
           // Function call
@@ -107,7 +115,10 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
               just(TokenKind::LeftParen),
               just(TokenKind::RightParen)
             ))
-            .map(|(name, arguments)| Expression::FunctionCall { name, arguments }),
+            .map_with_span(|(name, arguments), span| Expression {
+              kind: ExpressionKind::FunctionCall { name, arguments },
+              span,
+            }),
         )
         .or(
           // If expression
@@ -119,10 +130,13 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
                 .ignore_then(statement.clone())
                 .or_not(),
             )
-            .map(|((condition, consequence), alternative)| Expression::If {
-              condition: Box::new(condition),
-              consequence: Box::new(consequence),
-              alternative: Box::new(alternative),
+            .map_with_span(|((condition, consequence), alternative), span| Expression {
+              kind: ExpressionKind::If {
+                condition: Box::new(condition),
+                consequence: Box::new(consequence),
+                alternative: Box::new(alternative),
+              },
+              span,
             }),
         )
         .or(
@@ -132,10 +146,13 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
             .then_ignore(just(TokenKind::In))
             .then(expression.clone())
             .then(statement.clone())
-            .map(|((variable, iterable), body)| Expression::For {
-              variable,
-              iterable: Box::new(iterable),
-              body: Box::new(body),
+            .map_with_span(|((variable, iterable), body), span| Expression {
+              kind: ExpressionKind::For {
+                variable,
+                iterable: Box::new(iterable),
+                body: Box::new(body),
+              },
+              span,
             }),
         )
         .or(
@@ -143,9 +160,12 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
           just(TokenKind::While)
             .ignore_then(expression)
             .then(statement.clone())
-            .map(|(condition, body)| Expression::While {
-              condition: Box::new(condition),
-              body: Box::new(body),
+            .map_with_span(|(condition, body), span| Expression {
+              kind: ExpressionKind::While {
+                condition: Box::new(condition),
+                body: Box::new(body),
+              },
+              span,
             }),
         )
         .or(literal)

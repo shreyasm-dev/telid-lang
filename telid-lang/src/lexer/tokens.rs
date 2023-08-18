@@ -1,4 +1,4 @@
-use crate::{error::LexError, parser::ast::BinaryOperator};
+use crate::{error::LexError, parser::ast::{BinaryOperator, UnaryOperator}};
 use ordered_float::OrderedFloat;
 use strum_macros::AsRefStr;
 
@@ -96,6 +96,15 @@ impl TokenKind {
       Self::AmpersandAmpersand => BinaryOperator::And,
       Self::PipePipe => BinaryOperator::Or,
       Self::DotDot => BinaryOperator::Range,
+      _ => unreachable!(),
+    }
+  }
+
+  pub fn to_unary_operator(&self) -> UnaryOperator {
+    match self {
+      Self::Plus => UnaryOperator::Identity,
+      Self::Minus => UnaryOperator::Negate,
+      Self::Bang => UnaryOperator::Not,
       _ => unreachable!(),
     }
   }

@@ -2,7 +2,7 @@ use crate::{
   lexer::Lexer,
   parser::ast::{BinaryOperator, Statement, StatementKind},
   parser::{
-    ast::{Expression, UnaryOperator},
+    ast::{Expression, ExpressionKind, UnaryOperator},
     parser,
   },
 };
@@ -21,13 +21,25 @@ fn test_operators() {
   assert_eq!(
     ast,
     Ok(vec![Statement {
-      kind: StatementKind::Expression(Expression::Unary {
-        operator: UnaryOperator::Negate,
-        operand: Box::new(Expression::Binary {
-          left: Box::new(Expression::NumberLiteral(5.0)),
-          operator: BinaryOperator::Subtract,
-          right: Box::new(Expression::NumberLiteral(6.0)),
-        }),
+      kind: StatementKind::Expression(Expression {
+        kind: ExpressionKind::Unary {
+          operator: UnaryOperator::Negate,
+          operand: Box::new(Expression {
+            kind: ExpressionKind::Binary {
+              operator: BinaryOperator::Subtract,
+              left: Box::new(Expression {
+                kind: ExpressionKind::NumberLiteral(5.0),
+                span: 2..3,
+              }),
+              right: Box::new(Expression {
+                kind: ExpressionKind::NumberLiteral(6.0),
+                span: 3..4,
+              }),
+            },
+            span: 1..4,
+          }),
+        },
+        span: 0..4,
       }),
       span: 0..4,
     }])
@@ -44,13 +56,25 @@ fn test_operators() {
   assert_eq!(
     ast,
     Ok(vec![Statement {
-      kind: StatementKind::Expression(Expression::Binary {
-        left: Box::new(Expression::Unary {
-          operator: UnaryOperator::Negate,
-          operand: Box::new(Expression::NumberLiteral(5.0)),
-        }),
-        operator: BinaryOperator::Subtract,
-        right: Box::new(Expression::NumberLiteral(6.0)),
+      kind: StatementKind::Expression(Expression {
+        kind: ExpressionKind::Binary {
+          operator: BinaryOperator::Subtract,
+          left: Box::new(Expression {
+            kind: ExpressionKind::Unary {
+              operator: UnaryOperator::Negate,
+              operand: Box::new(Expression {
+                kind: ExpressionKind::NumberLiteral(5.0),
+                span: 3..4,
+              }),
+            },
+            span: 2..4,
+          }),
+          right: Box::new(Expression {
+            kind: ExpressionKind::NumberLiteral(6.0),
+            span: 5..6,
+          }),
+        },
+        span: 0..6,
       }),
       span: 0..6,
     }])

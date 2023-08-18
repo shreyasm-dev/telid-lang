@@ -27,7 +27,13 @@ pub enum StatementKind {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Expression {
+pub struct Expression {
+  pub kind: ExpressionKind,
+  pub span: Range<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ExpressionKind {
   Void,
   Identifier(Identifier),
   NumberLiteral(f64),

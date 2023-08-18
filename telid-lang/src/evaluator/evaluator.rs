@@ -4,7 +4,9 @@ use super::{
 };
 use crate::{
   error::EvaluationError,
-  parser::ast::{BinaryOperator, Expression, Statement, StatementKind, UnaryOperator},
+  parser::ast::{
+    BinaryOperator, Expression, ExpressionKind, Statement, StatementKind, UnaryOperator,
+  },
 };
 
 pub fn evaluate(
@@ -105,23 +107,28 @@ fn evaluate_expression(
   expression: Expression,
   mut scope: &mut Scope,
 ) -> Result<Value, EvaluationError> {
-  match expression {
-    Expression::Void => Ok(Value::Void),
-    Expression::Identifier(identifier) => match scope.get(&identifier.0) {
+  let Expression {
+    kind,
+    span: _, // TODO: Use span for error reporting
+  } = expression;
+
+  match kind {
+    ExpressionKind::Void => Ok(Value::Void),
+    ExpressionKind::Identifier(identifier) => match scope.get(&identifier.0) {
       Some(variable) => Ok(variable.value.clone()),
       None => Err(EvaluationError::UndefinedVariable(identifier.0)),
     },
-    Expression::NumberLiteral(number) => Ok(Value::Number(number)),
-    Expression::StringLiteral(string) => Ok(Value::String(string)),
-    Expression::BooleanLiteral(boolean) => Ok(Value::Boolean(boolean)),
-    Expression::ArrayLiteral(expressions) => {
+    ExpressionKind::NumberLiteral(number) => Ok(Value::Number(number)),
+    ExpressionKind::StringLiteral(string) => Ok(Value::String(string)),
+    ExpressionKind::BooleanLiteral(boolean) => Ok(Value::Boolean(boolean)),
+    ExpressionKind::ArrayLiteral(expressions) => {
       let mut array = Vec::new();
       for expression in expressions {
         array.push(evaluate_expression(expression, &mut scope)?);
       }
       Ok(Value::Array(array))
     }
-    Expression::Index { iterable, index } => {
+    ExpressionKind::Index { iterable, index } => {
       let iterable = evaluate_expression(*iterable, &mut scope)?;
       let index = evaluate_expression(*index, &mut scope)?;
       match (iterable.clone(), index) {
@@ -145,8 +152,8 @@ fn evaluate_expression(
         )),
       }
     }
-    // name: Identifier, parameters: Vec<Expression>
-    Expression::FunctionCall { name, arguments } => {
+    // name: Identifier, parameters: Vec<ExpressionKind>
+    ExpressionKind::FunctionCall { name, arguments } => {
       let function = match scope.get(&name.0) {
         Some(variable) => variable.value.clone(),
         None => return Err(EvaluationError::UndefinedVariable(name.0)),
@@ -197,7 +204,7 @@ fn evaluate_expression(
         )),
       }
     }
-    Expression::Unary { operator, operand } => {
+    ExpressionKind::Unary { operator, operand } => {
       let operand = evaluate_expression(*operand, &mut scope)?;
       match (operator.clone(), operand.clone()) {
         (UnaryOperator::Negate, Value::Number(number)) => Ok(Value::Number(-number)),
@@ -209,7 +216,7 @@ fn evaluate_expression(
         )),
       }
     }
-    Expression::Binary {
+    ExpressionKind::Binary {
       operator,
       left,
       right,
@@ -354,7 +361,7 @@ fn evaluate_expression(
         }
       }
     }
-    Expression::If {
+    ExpressionKind::If {
       condition,
       consequence,
       alternative,
@@ -377,7 +384,7 @@ fn evaluate_expression(
         )),
       }
     }
-    Expression::For {
+    ExpressionKind::For {
       variable,
       iterable,
       body,
@@ -422,7 +429,7 @@ fn evaluate_expression(
         )),
       }
     }
-    Expression::While { condition, body } => {
+    ExpressionKind::While { condition, body } => {
       let mut value = Vec::new();
 
       loop {
