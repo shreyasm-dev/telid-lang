@@ -108,5 +108,16 @@ pub fn default() -> Scope {
     },
   );
 
+  scope.insert(
+    String::from("type"),
+    Variable {
+      value: Value::RustFunction {
+        parameter_count: 1,
+        function: |parameters| Ok(Value::String(parameters[0].as_ref().to_string())),
+      },
+      constant: true,
+    },
+  );
+
   scope
 }
