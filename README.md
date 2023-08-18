@@ -76,3 +76,4 @@ Look at `examples/` for more examples
 - `exit(n)`: Exits the program with exit code `n`
 - `readln()`: Reads a line from stdin
 - `assert(c)`: Asserts that `c` is true
+- `parse(s)`: Parses `s` as a number and returns void if it fails

@@ -75,15 +75,33 @@ pub fn default() -> Scope {
     Variable {
       value: Value::RustFunction {
         parameter_count: 1,
-        function: |parameters| {
-          match parameters[0] {
-            Value::Boolean(true) => Ok(Value::Void),
-            Value::Boolean(false) => Err(EvaluationError::AssertionFailed),
-            _ => Err(EvaluationError::InvalidType(
-              parameters[0].as_ref().to_string(),
-              vec![String::from("Boolean")],
-            )),
-          }
+        function: |parameters| match parameters[0] {
+          Value::Boolean(true) => Ok(Value::Void),
+          Value::Boolean(false) => Err(EvaluationError::AssertionFailed),
+          _ => Err(EvaluationError::InvalidType(
+            parameters[0].as_ref().to_string(),
+            vec![String::from("Boolean")],
+          )),
+        },
+      },
+      constant: true,
+    },
+  );
+
+  scope.insert(
+    String::from("parse"),
+    Variable {
+      value: Value::RustFunction {
+        parameter_count: 1,
+        function: |parameters| match &parameters[0] {
+          Value::String(string) => match string.parse() {
+            Ok(number) => Ok(Value::Number(number)),
+            Err(_) => Ok(Value::Void),
+          },
+          _ => Err(EvaluationError::InvalidType(
+            parameters[0].as_ref().to_string(),
+            vec![String::from("String")],
+          )),
         },
       },
       constant: true,
