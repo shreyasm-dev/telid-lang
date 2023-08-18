@@ -1,4 +1,4 @@
-use crate::lexer::tokens::{Token, TokenKind};
+use telid_lang::lexer::tokens::{Token, TokenKind};
 use ariadne::{Label, Report, ReportKind};
 use chumsky::{error::SimpleReason, prelude::Simple};
 use std::ops::Range;

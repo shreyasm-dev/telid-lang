@@ -1,21 +1,20 @@
-use crate::{evaluator::scope::Scope, lexer::tokens::TokenKind};
 use ariadne::Source;
 use chumsky::Parser;
 use colored::Colorize;
-use evaluator::{evaluate, scope, value::Value};
 use inquire::{
   set_global_render_config,
   ui::{RenderConfig, StyleSheet, Styled},
   InquireError, Text,
 };
-use lexer::Lexer;
-use parser::parser;
+use telid_lang::{
+  evaluator::scope::Scope,
+  evaluator::{evaluate, scope, value::Value},
+  lexer::tokens::TokenKind,
+  lexer::Lexer,
+  parser::parser,
+};
 use util::simple_error_to_report;
 
-mod error;
-mod evaluator;
-mod lexer;
-mod parser;
 mod util;
 
 fn main() {
