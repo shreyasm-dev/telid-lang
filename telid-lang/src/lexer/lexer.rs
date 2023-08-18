@@ -71,6 +71,12 @@ impl<'a> Lexer<'a> {
             if has_dot {
               break;
             } else {
+              if let Some(e) = chars.peek() {
+                if !e.is_digit(10) {
+                  break;
+                }
+              }
+
               has_dot = true;
             }
           }
