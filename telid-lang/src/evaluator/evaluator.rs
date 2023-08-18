@@ -122,10 +122,16 @@ fn evaluate_expression(
       match (iterable.clone(), index) {
         (Value::Array(array), Value::Number(number)) => {
           let index = number as usize;
-          if index >= array.len() {
-            Err(EvaluationError::IndexOutOfBounds(index, array.len()))
-          } else {
-            Ok(array[index].clone())
+          match array.get(index) {
+            Some(value) => Ok(value.clone()),
+            None => Err(EvaluationError::IndexOutOfBounds(index, array.len())),
+          }
+        }
+        (Value::String(string), Value::Number(number)) => {
+          let index = number as usize;
+          match string.chars().nth(index) {
+            Some(character) => Ok(Value::String(character.to_string())),
+            None => Err(EvaluationError::IndexOutOfBounds(index, string.len())),
           }
         }
         _ => Err(EvaluationError::InvalidType(
