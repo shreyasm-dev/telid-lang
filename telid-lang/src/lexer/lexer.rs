@@ -71,6 +71,8 @@ impl<'a> Lexer<'a> {
             if has_dot {
               break;
             } else {
+              let mut chars = chars.clone();
+              chars.next();
               if let Some(e) = chars.peek() {
                 if !e.is_digit(10) {
                   break;
