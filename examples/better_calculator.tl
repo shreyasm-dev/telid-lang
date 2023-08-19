@@ -1,4 +1,4 @@
-println('This calculator supports +, -, *, and /');
+println('This calculator supports +, -, *, and / (and parentheses)');
 print('Enter an expression to evaluate (prefix notation): ');
 let source = readln();
 
