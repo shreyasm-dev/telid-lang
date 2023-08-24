@@ -187,29 +187,16 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         span,
       });
 
-    let let_declaration = just(TokenKind::Let)
-    .ignore_then(identifier)
+    let variable_declaration = just(TokenKind::Let)
+    .ignore_then(just(TokenKind::Const).or_not())
+    .then(identifier)
     .then_ignore(just(TokenKind::Equals))
     .then(expression.clone())
-    .map_with_span(|(name, value), span| Statement {
+    .map_with_span(|((constant, name), value), span| Statement {
       kind: StatementKind::Let {
         name,
         value,
-        constant: false,
-      },
-      span,
-    });
-
-    let const_declaration = just(TokenKind::Let)
-    .then_ignore(just(TokenKind::Const))
-    .ignore_then(identifier)
-    .then_ignore(just(TokenKind::Equals))
-    .then(expression.clone())
-    .map_with_span(|(name, value), span| Statement {
-      kind: StatementKind::Let {
-        name,
-        value,
-        constant: true,
+        constant: constant.is_some(),
       },
       span,
     });
@@ -243,8 +230,7 @@ pub fn parser() -> impl Parser<TokenKind, Vec<Statement>, Error = Simple<TokenKi
         span,
       })
       .or(assignment)
-      .or(let_declaration)
-      .or(const_declaration)
+      .or(variable_declaration)
       .or(function_declaration)
       .or(expression_statement)
       .then_ignore(just(TokenKind::Semicolon).or_not())
