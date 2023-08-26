@@ -80,3 +80,4 @@ Look at `examples/` for more examples
 - `type(v)`: Returns the type of `v`
 - `len(v)`: Returns the length of `v`
 - `filter(a, s)`: Returns a new array with all elements of `a` for which `type(x) == s`
+- `concat(a, b)`: Returns a new array with all elements of `a` followed by all elements of `b`

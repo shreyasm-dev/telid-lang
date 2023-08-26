@@ -191,5 +191,44 @@ pub fn default() -> Scope {
     },
   );
 
+  scope.insert(
+    String::from("concat"),
+    Variable {
+      value: Value::RustFunction {
+        parameter_count: 2,
+        function: |span, parameters| match &parameters[0] {
+          Value::Array(array) => match &parameters[1] {
+            Value::Array(other) => {
+              let mut result = Vec::new();
+              for element in array {
+                result.push(element.clone());
+              }
+              for element in other {
+                result.push(element.clone());
+              }
+
+              Ok(Value::Array(result))
+            }
+            _ => error(
+              EvaluationErrorKind::InvalidType(
+                parameters[1].as_ref().to_string(),
+                vec![String::from("Array")],
+              ),
+              span,
+            ),
+          },
+          _ => error(
+            EvaluationErrorKind::InvalidType(
+              parameters[0].as_ref().to_string(),
+              vec![String::from("Array")],
+            ),
+            span,
+          ),
+        },
+      },
+      constant: true,
+    },
+  );
+
   scope
 }
